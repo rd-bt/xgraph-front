@@ -11,6 +11,9 @@ const char *t2s[]={
 	[EXPR_MDEPFUNCTION]="Multi-dimension function*"
 };
 int main(int c,char **argv){
+	for(const struct expr_builtin_keyword *p=expr_keywords;p->str;++p){
+		printf("%-12s\tKeyword \t%s(%s)\n",p->str,p->str,p->desc);
+	}
 	for(const struct expr_builtin_symbol *p=expr_bsyms;p->str;++p){
 		printf("%-12s\t%s",p->str,t2s[p->type]);
 		switch(p->type){
@@ -20,12 +23,16 @@ int main(int c,char **argv){
 			case EXPR_VARIABLE:
 				printf("\tvalue: %e",*(double *)p->un.addr);
 				break;
+			case EXPR_FUNCTION:
+				printf("\tf(1.0): %e",p->un.func(1));
+				break;
 			case EXPR_MDFUNCTION:
 			case EXPR_MDEPFUNCTION:
 				if(p->dim)
 				printf("\tdimension: %u",p->dim);
 				else
 				printf("\tdimension: no limit");
+				break;
 
 		}
 		printf("\n");
