@@ -18,5 +18,5 @@ xgraph/header/expr.h:
 	make -C xgraph
 .PHONY:
 clean:
-	rm -f main calc list
+	rm -f draw calc list
 	make -C xgraph cleanall

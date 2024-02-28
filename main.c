@@ -17,7 +17,6 @@
 #include <errno.h>
 #include <pthread.h>
 #include "xgraph/header/xdraw.h"
-#define GAP 1
 #define SIZE 16
 #define BOLD 2
 #define FBOLD 1
@@ -68,14 +67,15 @@ volatile double n1=1.6,dpid;
 int thread=1;
 int force_ffmpeg=0;
 int32_t width=RATIO,height=RATIO;
-unsigned int sleep_gap=12500,barlen;
+unsigned int sleep_gap=12500,barlen,textline=0;
 uint32_t color=0xff0000;
 struct expr *xep,*yep;
 struct graph g;
 double step=0.0;
 struct winsize wsize;
 struct expr_symset es[1];
-double maxy=SIZE,miny=-SIZE,maxx=SIZE,minx=-SIZE,from=-SIZE,to=SIZE,gap;
+double maxy=SIZE,miny=-SIZE,maxx=SIZE,minx=-SIZE,from=-SIZE,to=SIZE,gapx=1.0,gapy=1.0;
+double gap;
 char *bar,*wbuf;
 double draw(size_t n,double *args){
 	assert(n==4);
@@ -126,7 +126,8 @@ void drawat(const char *ex,const char *ey,const char *para){
 	bar[barlen+2]=0;
 	//write(STDERR_FILENO,"\033[?25l",6);
 	//write(STDERR_FILENO,"\033c",2);
-	write(STDERR_FILENO,wbuf,sprintf(wbuf,"drawing x=%s , y=%s\n",ex,ey));
+	write(STDERR_FILENO,wbuf,sprintf(wbuf,"drawing x=%s y=%s\n",ex,ey));
+	graph_draw_text_pixel(&g,color,0,wbuf+7,4,g.height/16,0,g.height*(textline++)/16);
 	wbuf0=wbuf+sprintf(wbuf,"\033[%dA",wsize.ws_row<=thread+3?3:thread+3);
 	lrate=-1;
 	mrate=thread*10000;
@@ -179,7 +180,6 @@ void drawat(const char *ex,const char *ey,const char *para){
 	}
 	//write(STDERR_FILENO,"\033[?25h",6);
 	pthread_join(pt,NULL);
-	return;
 	for(int i=0;i<thread;++i){
 		expr_free(xep+i);
 		expr_free(yep+i);
@@ -262,6 +262,24 @@ int main(int argc,char **argv){
 			++cnt;
 		}else if(!strcmp(*cnt,"--no-connect")){
 			no_connect=1;
+		}else if(!strcmp(*cnt,"--minx")){
+			if(sscanf(*(++cnt),"%lf",&minx)<1)
+				errx(EXIT_FAILURE,"invaild step");
+		}else if(!strcmp(*cnt,"--maxx")){
+			if(sscanf(*(++cnt),"%lf",&maxx)<1)
+				errx(EXIT_FAILURE,"invaild step");
+		}else if(!strcmp(*cnt,"--miny")){
+			if(sscanf(*(++cnt),"%lf",&miny)<1)
+				errx(EXIT_FAILURE,"invaild step");
+		}else if(!strcmp(*cnt,"--maxy")){
+			if(sscanf(*(++cnt),"%lf",&maxy)<1)
+				errx(EXIT_FAILURE,"invaild step");
+		}else if(!strcmp(*cnt,"--gapx")){
+			if(sscanf(*(++cnt),"%lf",&gapx)<1)
+				errx(EXIT_FAILURE,"invaild step");
+		}else if(!strcmp(*cnt,"--gapy")){
+			if(sscanf(*(++cnt),"%lf",&gapy)<1)
+				errx(EXIT_FAILURE,"invaild step");
 		}else if(!strcmp(*cnt,"-nv")){
 			wsize.ws_row=3;
 		}else if(!strcmp(*cnt,"-F")){
@@ -301,10 +319,10 @@ int main(int argc,char **argv){
 	if(!frombuf)graph_fill(&g,0xffffff);
 	outstring("drawing axis...");
 	//graph_fill(&g,0xffffff);
-	graph_draw_grid(&g,0xbfbfbf,0*BOLD,GAP/4.0,GAP/4.0);
-	graph_draw_grid(&g,0x7f7f7f,1*BOLD,GAP,GAP);
+	graph_draw_grid(&g,0xbfbfbf,0*BOLD,gapx/4.0,gapy/4.0);
+	graph_draw_grid(&g,0x7f7f7f,1*BOLD,gapx,gapy);
 	//g.draw_value=0;
-	graph_draw_axis(&g,0x000000,1*BOLD,GAP,GAP,16*(width+height)/8192);
+	graph_draw_axis(&g,0x000000,1*BOLD,gapx,gapy,16*(width+height)/8192);
 	outstring("ok\n");
 	gap=(to-from)/thread;
 	currents=malloc(thread*sizeof(double));
@@ -328,6 +346,18 @@ int main(int argc,char **argv){
 		}else if(!strcmp(*cnt,"--no-connect")){
 		}else if(!strcmp(*cnt,"-nv")){
 		}else if(!strcmp(*cnt,"-F")){
+		}else if(!strcmp(*cnt,"--minx")){
+			++cnt;
+		}else if(!strcmp(*cnt,"--maxx")){
+			++cnt;
+		}else if(!strcmp(*cnt,"--miny")){
+			++cnt;
+		}else if(!strcmp(*cnt,"--maxy")){
+			++cnt;
+		}else if(!strcmp(*cnt,"--gapx")){
+			++cnt;
+		}else if(!strcmp(*cnt,"--gapy")){
+			++cnt;
 		}else if(!strcmp(*cnt,"-x")){
 			xexpr=*(++cnt);
 		}else if(!strcmp(*cnt,"--step")){
