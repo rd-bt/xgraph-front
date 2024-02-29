@@ -127,7 +127,18 @@ void drawat(const char *ex,const char *ey,const char *para){
 	//write(STDERR_FILENO,"\033[?25l",6);
 	//write(STDERR_FILENO,"\033c",2);
 	write(STDERR_FILENO,wbuf,sprintf(wbuf,"drawing x=%s y=%s\n",ex,ey));
-	graph_draw_text_pixel(&g,color,0,wbuf+7,4,g.height/16,0,g.height*(textline++)/16);
+	srate=g.height/16;
+	for(;;){
+	lrate=
+	graph_textlen(&g,wbuf+7,4,srate)*2;
+	if(lrate>=g.width)srate=srate*g.width/lrate;
+	else break;
+	}
+	//lrate=
+	//graph_textlen_pixel(&g,color,0,wbuf+7,4,srate,0,textline);
+	//graph_connect_pixel(&g,color,0,lrate,0,lrate,g.height-1);
+	graph_draw_text_pixel(&g,color,0,wbuf+7,4,srate,0,textline);
+	textline+=srate;
 	wbuf0=wbuf+sprintf(wbuf,"\033[%dA",wsize.ws_row<=thread+3?3:thread+3);
 	lrate=-1;
 	mrate=thread*10000;
@@ -251,6 +262,7 @@ int main(int argc,char **argv){
 	barlen=wsize.ws_col-28;
 	dpid=(double)getpid();
 	//printf("row:%d col:%d\n",wsize.ws_row,wsize.ws_col);
+	init_expr_symset(es);
 	for(char **cnt=argv+1;*cnt;++cnt){
 		if(!strcmp(*cnt,"--thread")){
 			if(sscanf(*(++cnt),"%d",&thread)<1)errx(EXIT_FAILURE,"invaild thread");
@@ -282,7 +294,18 @@ int main(int argc,char **argv){
 				errx(EXIT_FAILURE,"invaild step");
 		}else if(!strcmp(*cnt,"-nv")){
 			wsize.ws_row=3;
-		}else if(!strcmp(*cnt,"-F")){
+		}else if(!strcmp(*cnt,"-f")&&cnt-argv<argc-3){
+			char *buf,*p1,*p;
+			p1=*(++cnt);
+			if((p=strchr(*(++cnt),':'))){
+				buf=*cnt;
+				*(p++)=0;
+			}else {
+				buf="t";
+				p=*cnt;
+			}
+			expr_symset_add(es,p1,EXPR_HOTFUNCTION,p,buf);
+		}if(!strcmp(*cnt,"-F")){
 			force_ffmpeg=1;
 		}else if(!strcmp(*cnt,"--step")){
 			++cnt;
@@ -332,7 +355,6 @@ int main(int argc,char **argv){
 
 	xep=malloc((thread<<1)*sizeof(struct expr));
 	yep=xep+thread;
-	init_expr_symset(es);
 	expr_symset_add(es,"draw",EXPR_MDFUNCTION,draw,4);
 	add_common_symbols(es);
 	//draw start
@@ -358,6 +380,8 @@ int main(int argc,char **argv){
 			++cnt;
 		}else if(!strcmp(*cnt,"--gapy")){
 			++cnt;
+		}else if(!strcmp(*cnt,"-f")&&cnt-argv<argc-3){
+			cnt+=2;
 		}else if(!strcmp(*cnt,"-x")){
 			xexpr=*(++cnt);
 		}else if(!strcmp(*cnt,"--step")){

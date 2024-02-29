@@ -14,24 +14,25 @@ int main(int c,char **argv){
 	for(const struct expr_builtin_keyword *p=expr_keywords;p->str;++p){
 		printf("%-12s\tKeyword \t%s(%s)\n",p->str,p->str,p->desc);
 	}
+	printf("\n");
 	for(const struct expr_builtin_symbol *p=expr_bsyms;p->str;++p){
-		printf("%-12s\t%s",p->str,t2s[p->type]);
+		printf("%-12s\t%-30s",p->str,t2s[p->type]);
 		switch(p->type){
 			case EXPR_CONSTANT:
-				printf("\tvalue: %e",p->un.value);
+				printf("value: %e",p->un.value);
 				break;
 			case EXPR_VARIABLE:
-				printf("\tvalue: %e",*(double *)p->un.addr);
+				printf("value: %e",*(double *)p->un.addr);
 				break;
 			case EXPR_FUNCTION:
-				printf("\tf(1.0): %e",p->un.func(1));
+				printf("f(1.0): %e",p->un.func(1));
 				break;
 			case EXPR_MDFUNCTION:
 			case EXPR_MDEPFUNCTION:
 				if(p->dim)
-				printf("\tdimension: %u",p->dim);
+				printf("dimension: %u",p->dim);
 				else
-				printf("\tdimension: no limit");
+				printf("dimension: no limit");
 				break;
 
 		}

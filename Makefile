@@ -10,7 +10,11 @@ list: list.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
 	$(CC) $(CFLAG) $(LFLAG) list.c common_symbols.c -o list
 xgraph:
 	make -C xgraph
-xgraph/lib/xgraph.a:
+xgraph/expr.c:
+	make -C xgraph
+xgraph/xdraw.c:
+	make -C xgraph
+xgraph/lib/xgraph.a: xgraph/expr.c xgraph/xdraw.c
 	make -C xgraph
 xgraph/header/xdraw.h:
 	make -C xgraph
