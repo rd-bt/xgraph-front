@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <termios.h>
-//#include <alloca.h>
+#include <string.h>
 #include <err.h>
 #include <sys/wait.h>
 #include <sys/ioctl.h>
