@@ -3,11 +3,11 @@ CFLAG := -Wall -Ofast
 LFLAG := -lc -lm xgraph/lib/xgraph.a
 all: draw calc list
 draw: main.c xgraph/lib/xgraph.a xgraph/header/xdraw.h xgraph common_symbols.c
-	$(CC) $(CFLAG) $(LFLAG) main.c common_symbols.c -o draw
+	$(CC) $(CFLAG) main.c common_symbols.c -o draw $(LFLAG)
 calc: calc.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
-	$(CC) $(CFLAG) $(LFLAG) calc.c common_symbols.c -o calc
+	$(CC) $(CFLAG) calc.c common_symbols.c -o calc $(LFLAG)
 list: list.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
-	$(CC) $(CFLAG) $(LFLAG) list.c common_symbols.c -o list
+	$(CC) $(CFLAG) list.c common_symbols.c -o list $(LFLAG)
 xgraph:
 	make -C xgraph
 xgraph/expr.c:
