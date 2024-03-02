@@ -1,10 +1,10 @@
-//#include <stdio.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
 #include <math.h>
-//#include <err.h>
+#include <float.h>
 double dtime(double x){
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME,&ts);

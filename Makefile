@@ -1,6 +1,6 @@
 CC := gcc
 CFLAG := -Wall -Ofast
-LFLAG := -lc -lm xgraph/lib/xgraph.a
+LFLAG := xgraph/lib/xgraph.a -lc -lm
 all: draw calc list
 draw: main.c xgraph/lib/xgraph.a xgraph/header/xdraw.h xgraph common_symbols.c
 	$(CC) $(CFLAG) main.c common_symbols.c -o draw $(LFLAG)

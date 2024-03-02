@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <float.h>
 #include <pthread.h>
 #include "xgraph/header/xdraw.h"
 #define SIZE 16
