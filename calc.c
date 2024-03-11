@@ -43,13 +43,15 @@ int main(int argc,char **argv){
 redo:
 	result=expr_compute(ep,0);
 	if(--count)goto redo;
+	//asprintf(&buf,"%.64lf",result);
 	asprintf(&buf,"%.64lf",result);
-	if((p=strchr(buf,'.'))){
+	p=strchr(buf,'.');
+	if(p){
 		p+=strlen(p);
 		while(*(--p)=='0')*p=0;
+		if(*p=='.')*p=0;
 
 	}
-	if(*p=='.')*p=0;
 	puts(buf);
 	free(buf);
 	expr_free(ep);
