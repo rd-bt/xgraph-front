@@ -132,7 +132,7 @@ void drawat(const char *ex,const char *ey,const char *para){
 	for(;;){
 	lrate=
 	graph_textlen(&g,wbuf+7,4,srate)*2;
-	if(lrate>=g.width)srate=srate*g.width/lrate;
+	if(lrate>g.width)srate=srate*g.width/lrate;
 	else break;
 	}
 	//lrate=
