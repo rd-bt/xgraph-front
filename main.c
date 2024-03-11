@@ -81,7 +81,7 @@ char *bar,*wbuf;
 double draw(size_t n,double *args){
 	assert(n==4);
 	graph_connect(&g,color,0,args[0],args[1],args[2],args[3]);
-	return args[0];
+	return NAN;
 }
 void *drawing(void *args){
 	graph_drawep_mt(&g,color,FBOLD,xep,yep,from,to,step,currents,thread);
