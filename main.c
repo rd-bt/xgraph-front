@@ -65,7 +65,7 @@ ssize_t readall(int fd,void **pbuf){
 }
 volatile double *currents;
 volatile double n1=1.6,dpid;
-int thread=1;
+int thread=1,ioret=0;
 int force_ffmpeg=0;
 int32_t width=RATIO,height=RATIO;
 unsigned int sleep_gap=12500,barlen,textline=0;
@@ -78,7 +78,7 @@ struct expr_symset es[1];
 double maxy=SIZE,miny=-SIZE,maxx=SIZE,minx=-SIZE,from=-SIZE,to=SIZE,gapx=1.0,gapy=1.0;
 double gap;
 char *bar,*wbuf;
-double draw(size_t n,double *args){
+double draw_connect(size_t n,double *args){
 	assert(n==4);
 	graph_connect(&g,color,0,args[0],args[1],args[2],args[3]);
 	return NAN;
@@ -259,8 +259,8 @@ int main(int argc,char **argv){
 	size_t fromsize;
 	int no_connect=0;
 	srand48(time(NULL)+getpid());
-	ioctl(STDERR_FILENO,TIOCGWINSZ,&wsize);
-	barlen=wsize.ws_col-28;
+	barlen=ioctl(STDERR_FILENO,TIOCGWINSZ,&wsize)>=0?
+	wsize.ws_col-28:0;
 	dpid=(double)getpid();
 	//printf("row:%d col:%d\n",wsize.ws_row,wsize.ws_col);
 	init_expr_symset(es);
@@ -356,7 +356,7 @@ int main(int argc,char **argv){
 
 	xep=malloc((thread<<1)*sizeof(struct expr));
 	yep=xep+thread;
-	expr_symset_add(es,"draw",EXPR_MDFUNCTION,draw,4);
+	expr_symset_add(es,"connect",EXPR_MDFUNCTION,draw_connect,4);
 	add_common_symbols(es);
 	//draw start
 	for(char **cnt=argv+1;*cnt;++cnt){
