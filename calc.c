@@ -9,13 +9,13 @@
 void add_common_symbols(struct expr_symset *es);
 int main(int argc,char **argv){
 	char *buf,*p,*p1;
-	int c,count=1;
+	int count=1;
 	double result;
 	if(argc<2)
 	errx(EXIT_FAILURE,"no expression input");
 	struct expr_symset *es=new_expr_symset();
 	//char buf[9999]={"sum(n,1,100,1,n)"};
-	struct expr *ep;
+	struct expr ep[1];
 	//double n=6.6;
 	srand48(getpid()^time(NULL));
 	//printf("%lu\n",(unsigned long)&n);
@@ -36,9 +36,8 @@ int main(int argc,char **argv){
 		}
 	}
 	add_common_symbols(es);
-	ep=new_expr(argv[argc-1],"",es,&c);
-	if(!ep){
-		errx(EXIT_FAILURE,"expression error:%s",expr_error(c));
+	if(init_expr(ep,argv[argc-1],"",es)<0){
+		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
 redo:
 	result=expr_compute(ep,0);

@@ -103,7 +103,7 @@ void drawat(const char *ex,const char *ey,const char *para){
 			es->syms[j].addr,es->syms[j].str);
 		}
 		puts("");*/
-		if(xep[i].error)errx(EXIT_FAILURE,"%d x expression error:%s",i,expr_error(xep[i].error));
+		if(xep[i].error)errx(EXIT_FAILURE,"%d x expression error:%s (%s)",i,expr_error(xep[i].error),xep[i].errinfo);
 		/*expr_symset_free(es);
 		init_expr_symset(es);
 		expr_symset_add4(es,"draw",draw,EXPR_MDFUNCTION,4);
@@ -114,7 +114,7 @@ void drawat(const char *ex,const char *ey,const char *para){
 			es->syms[j].addr,es->syms[j].str);
 		}
 		puts("");*/
-		if(yep[i].error)errx(EXIT_FAILURE,"%d y expression error:%s",i,expr_error(yep[i].error));
+		if(yep[i].error)errx(EXIT_FAILURE,"%d x expression error:%s (%s)",i,expr_error(yep[i].error),yep[i].errinfo);
 	}
 	for(int i=0;i<thread;++i){
 		currents[i]=DBL_MIN;
@@ -346,7 +346,7 @@ int main(int argc,char **argv){
 	graph_draw_grid(&g,0xbfbfbf,0*BOLD,gapx/4.0,gapy/4.0);
 	graph_draw_grid(&g,0x7f7f7f,1*BOLD,gapx,gapy);
 	//g.draw_value=0;
-	graph_draw_axis(&g,0x000000,1*BOLD,gapx,gapy,16*(width+height)/8192);
+	graph_draw_axis(&g,0x000000,1*BOLD,gapx,gapy,64*(width+height)/8192);
 	outstring("ok\n");
 	gap=(to-from)/thread;
 	currents=malloc(thread*sizeof(double));
