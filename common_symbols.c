@@ -1,5 +1,6 @@
 #include <signal.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
@@ -42,7 +43,9 @@ double dprime(double x){
 double disprime(double x){
 	return (double)isprime((unsigned long)(fabs(x)+DBL_EPSILON));
 }
+volatile double vx[128];
 void add_common_symbols(struct expr_symset *es){
+	char buf[32];
 	expr_symset_add(es,"time",EXPR_FUNCTION,dtime);
 	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime);
 	expr_symset_add(es,"isprime",EXPR_FUNCTION,disprime);
@@ -53,4 +56,8 @@ void add_common_symbols(struct expr_symset *es){
 	expr_symset_add(es,"pid",EXPR_CONSTANT,(double)getpid());
 	expr_symset_add(es,"uid",EXPR_CONSTANT,(double)getuid());
 	expr_symset_add(es,"gid",EXPR_CONSTANT,(double)getgid());
+	for(size_t i=0;i<(sizeof(vx)/sizeof(*vx));++i){
+		sprintf(buf,"x%zu",i);
+		expr_symset_add(es,buf,EXPR_VARIABLE,vx+i);
+	}
 }
