@@ -346,7 +346,7 @@ int main(int argc,char **argv){
 	graph_draw_grid(&g,0xbfbfbf,0*BOLD,gapx/4.0,gapy/4.0);
 	graph_draw_grid(&g,0x7f7f7f,1*BOLD,gapx,gapy);
 	//g.draw_value=0;
-	graph_draw_axis(&g,0x000000,1*BOLD,gapx,gapy,64*(width+height)/8192);
+	graph_draw_axis(&g,0x000000,1*BOLD,gapx,gapy,32*(width+height)/8192);
 	outstring("ok\n");
 	gap=(to-from)/thread;
 	currents=malloc(thread*sizeof(double));
