@@ -9,7 +9,7 @@
 void add_common_symbols(struct expr_symset *es);
 int main(int argc,char **argv){
 	char *buf,*p,*p1;
-	int count=1,x=0;
+	long count=1,x=0;
 	double result;
 	if(argc<2)
 	errx(EXIT_FAILURE,"no expression input");
@@ -34,6 +34,9 @@ int main(int argc,char **argv){
 			}
 			expr_symset_add(es,p1,EXPR_HOTFUNCTION,p,buf);
 		}else if(!strcmp(argv[i],"-x"))x=1;
+		else if(!strcmp(argv[i],"-n")&&i<argc-2){
+				count=atol(argv[++i]);
+		}
 	}
 	add_common_symbols(es);
 	if(init_expr(ep,argv[argc-1],NULL,es)<0){
