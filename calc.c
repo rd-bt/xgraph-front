@@ -36,7 +36,7 @@ int main(int argc,char **argv){
 		}else if(!strcmp(argv[i],"-x"))x=1;
 	}
 	add_common_symbols(es);
-	if(init_expr(ep,argv[argc-1],"",es)<0){
+	if(init_expr(ep,argv[argc-1],NULL,es)<0){
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
 redo:
