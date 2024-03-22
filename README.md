@@ -38,7 +38,7 @@ user    0m0.965s
 sys     0m0.010s
 ```
 e.c:
-```
+```c
 #include "expr.h"
 static float mysqrt(struct expr_func *f, vec_expr_t *args, void *c) {
   float a = expr_eval(&vec_nth(args, 0));
