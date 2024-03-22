@@ -1,5 +1,6 @@
 # xgraph-front
 Front end of [xgraph](https://github.com/xbound/xgraph) library
+
 Example:
 ```
 ./draw -o 1.bmp 'sin(t)'
@@ -17,6 +18,7 @@ output the sum from 1 to 100
 send signal 15 to process with pid from 1 to 10000 and output the number of successes
 
 compare with [zserge's expr](https://github.com/zserge/expr)
+
 (By evaluating sqrt(4)+(0.75|1.5) for 10^8 times)
 
 ```
@@ -76,4 +78,4 @@ or
 ```
 ./getxgraph
 ```
-before build
+before make
