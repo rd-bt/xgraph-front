@@ -60,6 +60,7 @@ void list(const struct expr *restrict ep){
 					strcpy(ssrc," ");
 					break;
 			case EXPR_CALL:sop="call";break;
+			case EXPR_CALLZA:sop="callza";break;
 			case EXPR_ADD:sop="add";break;
 			case EXPR_SUB:sop="sub";break;
 			case EXPR_MUL:sop="mul";break;
@@ -102,6 +103,7 @@ void list(const struct expr *restrict ep){
 			case EXPR_GE:sop="ge";break;
 			case EXPR_LT:sop="lt";break;
 			case EXPR_LE:sop="le";break;
+			case EXPR_SEQ:sop="seq";break;
 			case EXPR_EQ:sop="eq";break;
 			case EXPR_NE:sop="ne";break;
 			case EXPR_ANDL:sop="andl";break;
@@ -186,7 +188,9 @@ int main(int argc,char **argv){
 				buf="t";
 				p=argv[i];
 			}
-			expr_symset_add(es,p1,EXPR_HOTFUNCTION,p,buf);
+			expr_symset_add(es,p1,EXPR_HOTFUNCTION,p,buf)
+				->flag=EXPR_SF_INJECTION
+				;
 		}
 	}
 	add_common_symbols(es);

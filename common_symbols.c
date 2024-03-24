@@ -6,7 +6,7 @@
 #include <time.h>
 #include <math.h>
 #include <float.h>
-double dtime(double x){
+double dtime(void){
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME,&ts);
 	return (double)ts.tv_sec+ts.tv_nsec/1000000000.0;
@@ -46,13 +46,13 @@ double disprime(double x){
 volatile double vx[128];
 void add_common_symbols(struct expr_symset *es){
 	char buf[32];
-	expr_symset_add(es,"time",EXPR_FUNCTION,dtime);
-	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime);
-	expr_symset_add(es,"isprime",EXPR_FUNCTION,disprime);
+	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime)->flag|=EXPR_SF_INJECTION;
+	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime)->flag|=EXPR_SF_INJECTION;
+	expr_symset_add(es,"isprime",EXPR_FUNCTION,disprime)->flag|=EXPR_SF_INJECTION;
 	expr_symset_add(es,"kill",EXPR_MDFUNCTION,dkill,2ul);
 	expr_symset_add(es,"raise",EXPR_FUNCTION,draise);
 	expr_symset_add(es,"exit",EXPR_FUNCTION,dexit);
-	expr_symset_add(es,"abort",EXPR_FUNCTION,abort);
+	expr_symset_add(es,"abort",EXPR_ZAFUNCTION,abort);
 	expr_symset_add(es,"pid",EXPR_CONSTANT,(double)getpid());
 	expr_symset_add(es,"uid",EXPR_CONSTANT,(double)getuid());
 	expr_symset_add(es,"gid",EXPR_CONSTANT,(double)getgid());
