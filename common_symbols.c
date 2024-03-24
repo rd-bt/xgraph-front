@@ -49,7 +49,7 @@ void add_common_symbols(struct expr_symset *es){
 	expr_symset_add(es,"time",EXPR_FUNCTION,dtime);
 	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime);
 	expr_symset_add(es,"isprime",EXPR_FUNCTION,disprime);
-	expr_symset_add(es,"kill",EXPR_MDFUNCTION,dkill,2);
+	expr_symset_add(es,"kill",EXPR_MDFUNCTION,dkill,2ul);
 	expr_symset_add(es,"raise",EXPR_FUNCTION,draise);
 	expr_symset_add(es,"exit",EXPR_FUNCTION,dexit);
 	expr_symset_add(es,"abort",EXPR_FUNCTION,abort);

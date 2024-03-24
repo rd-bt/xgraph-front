@@ -1,16 +1,52 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
 #include <err.h>
 void add_common_symbols(struct expr_symset *es);
-void list(struct expr *ep,int lv){
-	char *sop,ssrc[64];
+char prefix[1024]={0};
+void level_inc(void){
+	strcat(prefix,"----");
+}
+void level_dec(void){
+	memset(prefix+strlen(prefix)-4,0,4);
+}
+int xprintf(const char *fmt,...){
+	va_list ap;
+	int r;
+	va_start(ap,fmt);
+	r=printf("%s",prefix);
+	r+=vprintf(fmt,ap);
+	va_end(ap);
+	return r;
+}
+int addr2sym(const struct expr *restrict ep,char buf[EXPR_SYMLEN],void *addr){
+	union {
+		const struct expr_symbol *es;
+		const struct expr_builtin_symbol *ebs;
+	} sym;
+	sym.es=NULL;
+	if(ep->sset)sym.es=expr_symset_rsearch(ep->sset,addr);
+	if(sym.es){
+		strcpy(buf,sym.es->str);
+		return 0;
+	}
+	sym.ebs=expr_bsym_rsearch(addr);
+	if(sym.ebs){
+		strcpy(buf,sym.ebs->str);
+		return 0;
+	}
+	return -1;
+}
+void list(const struct expr *restrict ep){
+	char *sop,ssrc[EXPR_SYMLEN],sdst[EXPR_SYMLEN];
 	for(struct expr_inst *ip=ep->data;ip-ep->data<ep->size;++ip){
 		*ssrc=0;
+		*sdst=0;
 		switch(ip->op){
 			case EXPR_COPY:
 				sop="copy";
@@ -39,23 +75,29 @@ void list(struct expr *ep,int lv){
 					sop="neg";
 					strcpy(ssrc," ");
 					break;
-			case EXPR_IF:sop="if";break;
-			case EXPR_WHILE:sop="while";break;
-			case EXPR_SUM:sop="sum";break;
-			case EXPR_INT:sop="int";break;
-			case EXPR_PROD:sop="prod";break;
-			case EXPR_SUP:sop="sup";break;
-			case EXPR_INF:sop="inf";break;
-			case EXPR_ANDN:sop="andn";break;
-			case EXPR_ORN:sop="orn";break;
-			case EXPR_XORN:sop="xorn";break;
-			case EXPR_GCDN:sop="gcdn";break;
-			case EXPR_LCMN:sop="lcmn";break;
-			case EXPR_LOOP:sop="loop";break;
-			case EXPR_FOR:sop="for";break;
-			case EXPR_CALLMD:sop="callmd";break;
-			case EXPR_CALLMDEP:sop="callmdep";break;
-			case EXPR_CALLHOT:sop="callhot";break;
+			case EXPR_IF:sop="if";goto branch;
+			case EXPR_WHILE:sop="while";goto branch;
+			case EXPR_SUM:sop="sum";goto sum;
+			case EXPR_INT:sop="int";goto sum;
+			case EXPR_PROD:sop="prod";goto sum;
+			case EXPR_SUP:sop="sup";goto sum;
+			case EXPR_INF:sop="inf";goto sum;
+			case EXPR_ANDN:sop="andn";goto sum;
+			case EXPR_ORN:sop="orn";goto sum;
+			case EXPR_XORN:sop="xorn";goto sum;
+			case EXPR_GCDN:sop="gcdn";goto sum;
+			case EXPR_LCMN:sop="lcmn";goto sum;
+			case EXPR_LOOP:sop="loop";goto sum;
+			case EXPR_FOR:sop="for";goto sum;
+			case EXPR_CALLMD:sop="callmd";goto md;
+			case EXPR_CALLMDEP:sop="callmdep";goto md;
+			case EXPR_CALLHOT:
+					sop="callhot";
+					level_inc();
+					xprintf("hot function %p\n",ip->un.hotfunc);
+					list(ip->un.hotfunc);
+					level_dec();
+					break;
 			case EXPR_GT:sop="gt";break;
 			case EXPR_GE:sop="ge";break;
 			case EXPR_LT:sop="lt";break;
@@ -70,18 +112,54 @@ void list(struct expr *ep,int lv){
 					sop="end";
 					strcpy(ssrc," ");
 					break;
+sum:
+					level_inc();
+					xprintf("struct expr_suminfo %p index:%p\n",ip->un.es,&ip->un.es->index);
+					xprintf("%p->from\n",ip->un.es);
+					list(ip->un.es->from);
+					xprintf("%p->to\n",ip->un.es);
+					list(ip->un.es->to);
+					xprintf("%p->step\n",ip->un.es);
+					list(ip->un.es->step);
+					xprintf("%p->ep\n",ip->un.es);
+					list(ip->un.es->ep);
+					level_dec();
+					break;
+branch:
+					level_inc();
+					xprintf("struct expr_branchinfo %p\n",ip->un.eb);
+					xprintf("%p->cond\n",ip->un.eb);
+					list(ip->un.eb->cond);
+					xprintf("%p->body\n",ip->un.eb);
+					list(ip->un.eb->body);
+					xprintf("%p->value\n",ip->un.eb);
+					list(ip->un.eb->value);
+					level_dec();
+					break;
+md:
+					level_inc();
+					xprintf("struct expr_mdinfo %p\n",ip->un.em);
+					for(size_t i=0;i<ip->un.em->dim;++i){
+					xprintf("dimension %zu\n",i);
+					list(ip->un.em->eps+i);
+					}
+					level_dec();
+					break;
 		}
 		if(!*ssrc){
 			if(ip->un.src>=ep->vars&&ip->un.src<ep->vars+ep->vsize){
 				sprintf(ssrc,"vars[%zd]=%g",ip->un.src-ep->vars,*ip->un.src);
-			}else {
+			}else if(addr2sym(ep,ssrc,ip->un.src)<0){
 				sprintf(ssrc,"%p",ip->un.src);
 			}
 		}
-		if(ip->dst>=ep->vars&&ip->dst<ep->vars+ep->vsize)
-			printf("%-12s\tvars[%zd]=%g\t%s\n",sop,ip->dst-ep->vars,*ip->dst,ssrc);
-		else
-			printf("%-12s\t%p\t%s\n",sop,ip->dst,ssrc);
+		if(!*sdst){
+			if(ip->dst>=ep->vars&&ip->dst<ep->vars+ep->vsize)
+				sprintf(sdst,"vars[%zd]=%g",ip->dst-ep->vars,*ip->dst);
+			else if(addr2sym(ep,sdst,ip->dst)<0)
+				sprintf(sdst,"%p",ip->dst);
+		}
+		xprintf("%-9s%s\t%s\n",sop,sdst,ssrc);
 	}
 }
 int main(int argc,char **argv){
@@ -114,7 +192,7 @@ int main(int argc,char **argv){
 	if(init_expr(ep,argv[argc-1],"t",es)<0){
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
-	list(ep,0);
+	list(ep);
 	expr_free(ep);
 	expr_symset_free(es);
 	return 0;

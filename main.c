@@ -93,27 +93,12 @@ void drawat(const char *ex,const char *ey,const char *para){
 	char *wbuf0;
 	for(int i=0;i<thread;++i){
 
-		/*expr_symset_free(es);
-		init_expr_symset(es);
-		expr_symset_add4(es,"draw",draw,EXPR_MDFUNCTION,4);
-		expr_symset_add(es,"n1",(void *)&n1,EXPR_PARAMETER);*/	
 		init_expr(xep+i,ex,para,es);
-		/*for(int j=0;j<es->size;++j){
-			printf("%i es %s %p at %p\n",i,es->syms[j].str,
-			es->syms[j].addr,es->syms[j].str);
-		}
-		puts("");*/
+
 		if(xep[i].error)errx(EXIT_FAILURE,"%d x expression error:%s (%s)",i,expr_error(xep[i].error),xep[i].errinfo);
-		/*expr_symset_free(es);
-		init_expr_symset(es);
-		expr_symset_add4(es,"draw",draw,EXPR_MDFUNCTION,4);
-		expr_symset_add(es,"n1",(void *)&n1,EXPR_PARAMETER);*/
+
 		init_expr(yep+i,ey,para,es);
-		/*for(int j=0;j<es->size;++j){
-			printf("%i es %s %p at %p\n",i,es->syms[j].str,
-			es->syms[j].addr,es->syms[j].str);
-		}
-		puts("");*/
+
 		if(yep[i].error)errx(EXIT_FAILURE,"%d x expression error:%s (%s)",i,expr_error(yep[i].error),yep[i].errinfo);
 	}
 	for(int i=0;i<thread;++i){
@@ -269,7 +254,7 @@ int main(int argc,char **argv){
 			if(sscanf(*(++cnt),"%d",&thread)<1)errx(EXIT_FAILURE,"invaild thread");
 		}else if(!strcmp(*cnt,"--ratio")){
 			if(sscanf(*(++cnt),"%dx%d",&width,&height)<2)errx(EXIT_FAILURE,"invaild thread");
-		}else if(!strcmp(*cnt,"--from")){
+		}else if(!strcmp(*cnt,"--frombmp")){
 			frombmp=*(++cnt);
 		}else if(!strcmp(*cnt,"-x")){
 			++cnt;
@@ -277,16 +262,21 @@ int main(int argc,char **argv){
 			no_connect=1;
 		}else if(!strcmp(*cnt,"--minx")){
 			if(sscanf(*(++cnt),"%lf",&minx)<1)
-				errx(EXIT_FAILURE,"invaild step");
+				errx(EXIT_FAILURE,"invaild minx");
 		}else if(!strcmp(*cnt,"--maxx")){
 			if(sscanf(*(++cnt),"%lf",&maxx)<1)
-				errx(EXIT_FAILURE,"invaild step");
+				errx(EXIT_FAILURE,"invaild maxx");
 		}else if(!strcmp(*cnt,"--miny")){
 			if(sscanf(*(++cnt),"%lf",&miny)<1)
-				errx(EXIT_FAILURE,"invaild step");
+				errx(EXIT_FAILURE,"invaild miny");
 		}else if(!strcmp(*cnt,"--maxy")){
 			if(sscanf(*(++cnt),"%lf",&maxy)<1)
-				errx(EXIT_FAILURE,"invaild step");
+				errx(EXIT_FAILURE,"invaild maxy");
+		}else if(!strcmp(*cnt,"--radius")){
+			if(sscanf(*(++cnt),"%lf",&maxx)<1)
+				errx(EXIT_FAILURE,"invaild radius");
+			maxy=maxx;
+			miny=minx=-maxx;
 		}else if(!strcmp(*cnt,"--gapx")){
 			if(sscanf(*(++cnt),"%lf",&gapx)<1)
 				errx(EXIT_FAILURE,"invaild step");
@@ -317,6 +307,7 @@ int main(int argc,char **argv){
 		}
 	}
 	if(thread<1)thread=1;
+	if(thread<2)wsize.ws_row=3;
 	if(!file)errx(EXIT_FAILURE,"no output file (-o)");
 	if(frombmp){
 		fromfd=open(frombmp,O_RDONLY);
@@ -356,19 +347,25 @@ int main(int argc,char **argv){
 
 	xep=malloc((thread<<1)*sizeof(struct expr));
 	yep=xep+thread;
-	expr_symset_add(es,"connect",EXPR_MDFUNCTION,draw_connect,4);
+	expr_symset_add(es,"connect",EXPR_MDFUNCTION,draw_connect,4ul);
 	add_common_symbols(es);
 	//draw start
 	for(char **cnt=argv+1;*cnt;++cnt){
 		if(!strcmp(*cnt,"--thread")){
 			++cnt;
-		}else if(!strcmp(*cnt,"--from")){
+		}else if(!strcmp(*cnt,"--frombmp")){
 			++cnt;
 		}else if(!strcmp(*cnt,"--ratio")){
 			++cnt;
 		}else if(!strcmp(*cnt,"--no-connect")){
 		}else if(!strcmp(*cnt,"-nv")){
 		}else if(!strcmp(*cnt,"-F")){
+		}else if(!strcmp(*cnt,"--from")){
+			if(sscanf(*(++cnt),"%lf",&from)<1)
+				errx(EXIT_FAILURE,"invaild from");
+		}else if(!strcmp(*cnt,"--to")){
+			if(sscanf(*(++cnt),"%lf",&to)<1)
+				errx(EXIT_FAILURE,"invaild to");
 		}else if(!strcmp(*cnt,"--minx")){
 			++cnt;
 		}else if(!strcmp(*cnt,"--maxx")){
@@ -376,6 +373,8 @@ int main(int argc,char **argv){
 		}else if(!strcmp(*cnt,"--miny")){
 			++cnt;
 		}else if(!strcmp(*cnt,"--maxy")){
+			++cnt;
+		}else if(!strcmp(*cnt,"--radius")){
 			++cnt;
 		}else if(!strcmp(*cnt,"--gapx")){
 			++cnt;

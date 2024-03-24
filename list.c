@@ -30,7 +30,7 @@ int main(int c,char **argv){
 			case EXPR_MDFUNCTION:
 			case EXPR_MDEPFUNCTION:
 				if(p->dim)
-				printf("dimension: %u",p->dim);
+				printf("dimension: %zu",p->dim);
 				else
 				printf("dimension: no limit");
 				break;
