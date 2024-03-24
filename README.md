@@ -34,7 +34,7 @@ sys     0m0.006s
 //x0=0.
 //The expression will be optimized
 //into the constant 3.75 (the real
-//time becames 0m0.287s) if here
+//time became 0m0.287s) if there
 //is not x0
 3.75
 
