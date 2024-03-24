@@ -8,7 +8,9 @@ const char *t2s[]={
 	[EXPR_VARIABLE]="Variable",
 	[EXPR_FUNCTION]="Function",
 	[EXPR_MDFUNCTION]="Multi-dimension function",
-	[EXPR_MDEPFUNCTION]="Multi-dimension function*"
+	[EXPR_MDEPFUNCTION]="Multi-dimension function*",
+	[EXPR_HOTFUNCTION]="Hot function*",
+	[EXPR_ZAFUNCTION]="Zero-argument function*"
 };
 int main(int c,char **argv){
 	for(const struct expr_builtin_keyword *p=expr_keywords;p->str;++p){
