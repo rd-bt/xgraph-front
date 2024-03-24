@@ -43,7 +43,7 @@ int addr2sym(const struct expr *restrict ep,char buf[EXPR_SYMLEN],void *addr){
 	return -1;
 }
 void list(const struct expr *restrict ep){
-	char *sop,ssrc[EXPR_SYMLEN],sdst[EXPR_SYMLEN];
+	char *sop=NULL,ssrc[EXPR_SYMLEN],sdst[EXPR_SYMLEN];
 	for(struct expr_inst *ip=ep->data;ip-ep->data<ep->size;++ip){
 		*ssrc=0;
 		*sdst=0;
@@ -146,6 +146,7 @@ md:
 					level_dec();
 					break;
 		}
+		if(!sop)abort();
 		if(!*ssrc){
 			if(ip->un.src>=ep->vars&&ip->un.src<ep->vars+ep->vsize){
 				sprintf(ssrc,"vars[%zd]=%g",ip->un.src-ep->vars,*ip->un.src);
