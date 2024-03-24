@@ -32,9 +32,10 @@ user    0m1.318s
 sys     0m0.006s
 ~/zserge_expr $ time ../xgraph-front/calc -n 100000000 'sqrt(x0+4)+(0.75|1.5)'
 //x0=0.
-//The expression will be optimized into
-//the constant 3.75 (the real time becames
-//0m0.287s) if here is not x0
+//The expression will be optimized
+//into the constant 3.75 (the real
+//time becames 0m0.287s) if here
+//is not x0
 3.75
 
 real    0m1.153s
