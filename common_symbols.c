@@ -46,7 +46,7 @@ double disprime(double x){
 volatile double vx[128];
 void add_common_symbols(struct expr_symset *es){
 	char buf[32];
-	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime)->flag|=EXPR_SF_INJECTION;
+	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime);
 	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime)->flag|=EXPR_SF_INJECTION;
 	expr_symset_add(es,"isprime",EXPR_FUNCTION,disprime)->flag|=EXPR_SF_INJECTION;
 	expr_symset_add(es,"kill",EXPR_MDFUNCTION,dkill,2ul);

@@ -188,9 +188,8 @@ int main(int argc,char **argv){
 				buf="t";
 				p=argv[i];
 			}
-			expr_symset_add(es,p1,EXPR_HOTFUNCTION,p,buf)
-				->flag=EXPR_SF_INJECTION
-				;
+			expr_symset_add(es,p1,EXPR_HOTFUNCTION,p,buf);
+				//->flag=EXPR_SF_INJECTION
 		}
 	}
 	add_common_symbols(es);
