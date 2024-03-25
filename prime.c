@@ -3,9 +3,8 @@
 
 unsigned long prime(unsigned long x){
 	static unsigned long *p=NULL;
-	volatile static size_t n=0;
+	static size_t n=0;
 	static size_t size=0;
-	static pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;;
 
 	static int im65=0;
 	unsigned long *lp;
@@ -13,8 +12,8 @@ unsigned long prime(unsigned long x){
 	unsigned long endn;
 	size_t sizem1;
 	if(!n){
-		pthread_mutex_lock(&mutex);
-		if(!n){
+		//pthread_mutex_lock(&mutex);
+		//if(!n){
 		p=malloc((size=9ul)*sizeof(unsigned long));
 		if(!p){
 			warn("IN prime()\n"
@@ -32,12 +31,11 @@ unsigned long prime(unsigned long x){
 		p[7]=17;
 		p[8]=19;
 		n=8;
-		}
-		pthread_mutex_unlock(&mutex);
+		//}
+		//pthread_mutex_unlock(&mutex);
 	}
 	if(x<=n)return p[x];
-	pthread_mutex_lock(&mutex);
-	if(x<=n)goto end;
+	//if(x<=n)goto end;
 	if(x+1>=size){
 		size=(x+1025ul)&~1023ul;
 		lp=p;
@@ -63,7 +61,46 @@ fail:
 		if(im65^=1)i+=2;
 		else i+=4;
 	}
-end:
-	pthread_mutex_unlock(&mutex);
+//end:
 	return p[x];
+}
+unsigned long prime_mt(unsigned long x){
+	static pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
+	unsigned long r;
+	pthread_mutex_lock(&mutex);
+	r=prime(x);
+	pthread_mutex_unlock(&mutex);
+	return r;
+}
+unsigned long prime_old(unsigned long x){
+	unsigned long im65,im652;
+	unsigned long i,endn;
+	switch(x){
+		case 0ul:return 1;
+		case 1ul:return 2;
+		case 2ul:return 3;
+		case 3ul:return 5;
+		case 4ul:return 7;
+		default:break;
+	}
+	im65=0;
+	x-=4;
+	for(i=11;;){
+		endn=(unsigned long)(sqrt((double)i)+1.0);
+		//printf("i=%lu,x=%lu\n",i,x);
+		if(!(i&1))goto fail;
+		if(!(i%3))goto fail;
+		im652=0;
+		for(unsigned long i1=5;i1<=endn;){
+			if(!(i%i1))goto fail;
+			if(im652^=1)i1+=2;
+			else i1+=4;
+		}
+		//printf("i=%lu,x=%lu\n",i,x);
+		if(!--x)break;
+fail:
+		if(im65^=1)i+=2;
+		else i+=4;
+	}
+	return i;
 }

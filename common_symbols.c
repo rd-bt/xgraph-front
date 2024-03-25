@@ -48,6 +48,12 @@ int isprime(unsigned long n){
 double dprime(double x){
 	return (double)prime((unsigned long)(fabs(x)));
 }
+double dprime_mt(double x){
+	return (double)prime_mt((unsigned long)(fabs(x)));
+}
+double dprime_old(double x){
+	return (double)prime_old((unsigned long)(fabs(x)));
+}
 double disprime(double x){
 	return (double)isprime((unsigned long)(fabs(x)));
 }
@@ -59,6 +65,8 @@ void add_common_symbols(struct expr_symset *es){
 	expr_symset_add(es,"isprime",EXPR_FUNCTION,disprime)->flag|=EXPR_SF_INJECTION;
 	expr_symset_add(es,"kill",EXPR_MDFUNCTION,dkill,2ul);
 	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime)->flag|=EXPR_SF_INJECTION;
+	expr_symset_add(es,"prime_mt",EXPR_FUNCTION,dprime_mt)->flag|=EXPR_SF_INJECTION;
+	expr_symset_add(es,"prime_old",EXPR_FUNCTION,dprime_old)->flag|=EXPR_SF_INJECTION;
 	expr_symset_add(es,"raise",EXPR_FUNCTION,draise);
 	expr_symset_add(es,"sleep",EXPR_FUNCTION,dsleep);
 	expr_symset_add(es,"tgkill",EXPR_MDFUNCTION,dtgkill,3ul);
