@@ -5,11 +5,23 @@
 #include "xgraph/header/expr.h"
 #include <time.h>
 #include <math.h>
+#include "prime.c"
 #include <float.h>
 double dtime(void){
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME,&ts);
 	return (double)ts.tv_sec+ts.tv_nsec/1000000000.0;
+}
+double dsleep(double x){
+	struct timespec rts,ts;
+	double fx;
+	x=fabs(x);
+	fx=floor(x);
+	ts.tv_sec=(time_t)fx;
+	ts.tv_nsec=(time_t)((x-fx)*1000000000.0);
+	memset(&rts,0,sizeof(struct timespec));
+	nanosleep(&ts,&rts);
+	return (double)rts.tv_sec+rts.tv_nsec/1000000000.0;
 }
 
 double draise(double x){
@@ -22,6 +34,9 @@ double dexit(double x){
 double dkill(size_t n,double *args){
 	return (double)kill((pid_t)(args[0]),(int)(args[1]));
 }
+double dtgkill(size_t n,double *args){
+	return (double)tgkill((pid_t)(args[0]),(int)(args[1]),(int)(args[2]));
+}
 int isprime(unsigned long n){
 	if(n==2)return 1;
 	if(!(n&1))return 0;
@@ -30,29 +45,24 @@ int isprime(unsigned long n){
 		if(!(n%i))return 0;
 	return 1;
 }
-unsigned long prime(unsigned long n){
-	if(!n)return 1;
-	if(!(--n))return 2;
-	for(int i=3;;i+=2){
-		if(isprime(i)&&!(--n))return i;
-	}
-}
 double dprime(double x){
-	return (double)prime((unsigned long)(fabs(x)+DBL_EPSILON));
+	return (double)prime((unsigned long)(fabs(x)));
 }
 double disprime(double x){
-	return (double)isprime((unsigned long)(fabs(x)+DBL_EPSILON));
+	return (double)isprime((unsigned long)(fabs(x)));
 }
 volatile double vx[128];
 void add_common_symbols(struct expr_symset *es){
 	char buf[32];
-	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime);
-	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime)->flag|=EXPR_SF_INJECTION;
+	expr_symset_add(es,"abort",EXPR_ZAFUNCTION,abort);
+	expr_symset_add(es,"exit",EXPR_FUNCTION,dexit);
 	expr_symset_add(es,"isprime",EXPR_FUNCTION,disprime)->flag|=EXPR_SF_INJECTION;
 	expr_symset_add(es,"kill",EXPR_MDFUNCTION,dkill,2ul);
+	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime)->flag|=EXPR_SF_INJECTION;
 	expr_symset_add(es,"raise",EXPR_FUNCTION,draise);
-	expr_symset_add(es,"exit",EXPR_FUNCTION,dexit);
-	expr_symset_add(es,"abort",EXPR_ZAFUNCTION,abort);
+	expr_symset_add(es,"sleep",EXPR_FUNCTION,dsleep);
+	expr_symset_add(es,"tgkill",EXPR_MDFUNCTION,dtgkill,3ul);
+	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime);
 	expr_symset_add(es,"pid",EXPR_CONSTANT,(double)getpid());
 	expr_symset_add(es,"uid",EXPR_CONSTANT,(double)getuid());
 	expr_symset_add(es,"gid",EXPR_CONSTANT,(double)getgid());

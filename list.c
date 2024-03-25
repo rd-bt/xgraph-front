@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
+#include <math.h>
 const char *t2s[]={
 	[EXPR_CONSTANT]="Constant",
 	[EXPR_VARIABLE]="Variable",
@@ -21,18 +22,18 @@ int main(int c,char **argv){
 		printf("%-12s\t%-30s",p->str,t2s[p->type]);
 		switch(p->type){
 			case EXPR_CONSTANT:
-				printf("value: %e",p->un.value);
+				printf("value: %g",p->un.value);
 				break;
 			case EXPR_VARIABLE:
-				printf("value: %e",*(double *)p->un.addr);
+				printf("value: %g",*(double *)p->un.addr);
 				break;
 			case EXPR_FUNCTION:
-				printf("f(1.0): %e",p->un.func(1));
+				printf("f(1.0):%.4g    f(e):%.4g",p->un.func(1),p->un.func(M_E));
 				break;
 			case EXPR_MDFUNCTION:
 			case EXPR_MDEPFUNCTION:
-				if(p->dim)
-				printf("dimension: %zu",p->dim);
+				if(p->un.md.dim)
+				printf("dimension: %zu",p->un.md.dim);
 				else
 				printf("dimension: no limit");
 				break;
