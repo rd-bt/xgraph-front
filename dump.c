@@ -24,13 +24,13 @@ int xprintf(const char *fmt,...){
 	va_end(ap);
 	return r;
 }
-int addr2sym(const struct expr *restrict ep,char buf[EXPR_SYMLEN],void *addr){
+int addr2sym(const struct expr *restrict ep,const struct expr_symset *restrict esp,char buf[EXPR_SYMLEN],void *addr){
 	union {
 		const struct expr_symbol *es;
 		const struct expr_builtin_symbol *ebs;
 	} sym;
 	sym.es=NULL;
-	if(ep->sset)sym.es=expr_symset_rsearch(ep->sset,addr);
+	if(ep->sset)sym.es=expr_symset_rsearch(esp,addr);
 	if(sym.es){
 		strcpy(buf,sym.es->str);
 		return 0;
@@ -42,7 +42,7 @@ int addr2sym(const struct expr *restrict ep,char buf[EXPR_SYMLEN],void *addr){
 	}
 	return -1;
 }
-void list(const struct expr *restrict ep){
+void list(const struct expr *restrict ep,const struct expr_symset *restrict esp){
 	char *sop=NULL,ssrc[EXPR_SYMLEN],sdst[EXPR_SYMLEN];
 	for(struct expr_inst *ip=ep->data;ip-ep->data<ep->size;++ip){
 		*ssrc=0;
@@ -96,7 +96,7 @@ void list(const struct expr *restrict ep){
 					sop="callhot";
 					level_inc();
 					xprintf("hot function %p\n",ip->un.hotfunc);
-					list(ip->un.hotfunc);
+					list(ip->un.hotfunc,esp);
 					level_dec();
 					break;
 			case EXPR_GT:sop="gt";break;
@@ -118,24 +118,24 @@ sum:
 					level_inc();
 					xprintf("struct expr_suminfo %p index:%p\n",ip->un.es,&ip->un.es->index);
 					xprintf("%p->from\n",ip->un.es);
-					list(ip->un.es->from);
+					list(ip->un.es->from,esp);
 					xprintf("%p->to\n",ip->un.es);
-					list(ip->un.es->to);
+					list(ip->un.es->to,esp);
 					xprintf("%p->step\n",ip->un.es);
-					list(ip->un.es->step);
+					list(ip->un.es->step,esp);
 					xprintf("%p->ep\n",ip->un.es);
-					list(ip->un.es->ep);
+					list(ip->un.es->ep,esp);
 					level_dec();
 					break;
 branch:
 					level_inc();
 					xprintf("struct expr_branchinfo %p\n",ip->un.eb);
 					xprintf("%p->cond\n",ip->un.eb);
-					list(ip->un.eb->cond);
+					list(ip->un.eb->cond,esp);
 					xprintf("%p->body\n",ip->un.eb);
-					list(ip->un.eb->body);
+					list(ip->un.eb->body,esp);
 					xprintf("%p->value\n",ip->un.eb);
-					list(ip->un.eb->value);
+					list(ip->un.eb->value,esp);
 					level_dec();
 					break;
 md:
@@ -143,7 +143,7 @@ md:
 					xprintf("struct expr_mdinfo %p\n",ip->un.em);
 					for(size_t i=0;i<ip->un.em->dim;++i){
 					xprintf("dimension %zu\n",i);
-					list(ip->un.em->eps+i);
+					list(ip->un.em->eps+i,esp);
 					}
 					level_dec();
 					break;
@@ -152,14 +152,14 @@ md:
 		if(!*ssrc){
 			if(ip->un.src>=ep->vars&&ip->un.src<ep->vars+ep->vsize){
 				sprintf(ssrc,"vars[%zd]=%g",ip->un.src-ep->vars,*ip->un.src);
-			}else if(addr2sym(ep,ssrc,ip->un.src)<0){
+			}else if(addr2sym(ep,esp,ssrc,ip->un.src)<0){
 				sprintf(ssrc,"%p",ip->un.src);
 			}
 		}
 		if(!*sdst){
 			if(ip->dst>=ep->vars&&ip->dst<ep->vars+ep->vsize)
 				sprintf(sdst,"vars[%zd]=%g",ip->dst-ep->vars,*ip->dst);
-			else if(addr2sym(ep,sdst,ip->dst)<0)
+			else if(addr2sym(ep,esp,sdst,ip->dst)<0)
 				sprintf(sdst,"%p",ip->dst);
 		}
 		xprintf("%-9s%s\t%s\n",sop,sdst,ssrc);
@@ -196,7 +196,7 @@ int main(int argc,char **argv){
 	if(init_expr(ep,argv[argc-1],"t",es)<0){
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
-	list(ep);
+	list(ep,ep->sset);
 	expr_free(ep);
 	expr_symset_free(es);
 	return 0;
