@@ -11,7 +11,10 @@ draw a graph of sin(t) to 1.bmp
 ./calc 'sum(n,1,100,1,n)'
 ```
 output the sum from 1 to 100
-
+```
+./calc '0-->x,0-->y,for(n,1,x<=555555,(x->y,prime((n+1)->n)->x),y)'
+```
+find the greatest prime <=555555 (555523)
 ```
 ./calc 'sum(n,1,10000,1,kill(n,15)==0)'
 ```
