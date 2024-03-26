@@ -52,6 +52,7 @@ int addr2sym(const struct expr *restrict ep,const struct expr_symset *restrict e
 void list(const struct expr *restrict ep,const struct expr_symset *restrict esp){
 	char *sop=NULL,ssrc[EXPR_SYMLEN],sdst[EXPR_SYMLEN];
 	ssize_t index;
+	xprintf("%zu instructions %zu vars in total\n",ep->size,ep->vsize);
 	for(struct expr_inst *ip=ep->data;ip-ep->data<ep->size;++ip){
 		*ssrc=0;
 		*sdst=0;
@@ -148,7 +149,7 @@ branch:
 					break;
 md:
 					level_inc();
-					xprintf("struct expr_mdinfo %p\n",ip->un.em);
+					xprintf("struct expr_mdinfo %p dim=%zu\n",ip->un.em,ip->un.em->dim);
 					for(size_t i=0;i<ip->un.em->dim;++i){
 					xprintf("dimension %zu\n",i);
 					list(ip->un.em->eps+i,esp);

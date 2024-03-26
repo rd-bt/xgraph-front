@@ -39,7 +39,7 @@ int main(int argc,char **argv){
 		}
 	}
 	add_common_symbols(es);
-	if(init_expr(ep,argv[argc-1],NULL,es)<0){
+	if(init_expr(ep,argv[argc-1],"t",es)<0){
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
 redo:

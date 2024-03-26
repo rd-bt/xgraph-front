@@ -127,14 +127,24 @@ int isprime(unsigned long n){
 		if(!(n%i))return 0;
 	return 1;
 }
+double cal_prime(double x,unsigned long (*f)(unsigned long)){
+	double fx,xmfx;
+	if(x<=0.0)return 1.0;
+	fx=floor(x);
+	xmfx=x-fx;
+	if(xmfx<=DBL_EPSILON)
+		return (double)f((unsigned long)(x));
+	return (1.0-xmfx)*(double)f((unsigned long)(fx))
+		+xmfx*(double)f(1ul+(unsigned long)fx);
+}
 double dprime(double x){
-	return (double)prime((unsigned long)(fabs(x)));
+	return cal_prime(x,prime);
 }
 double dprime_mt(double x){
-	return (double)prime_mt((unsigned long)(fabs(x)));
+	return cal_prime(x,prime_mt);
 }
 double dprime_old(double x){
-	return (double)prime_old((unsigned long)(fabs(x)));
+	return cal_prime(x,prime_old);
 }
 double disprime(double x){
 	return (double)isprime((unsigned long)(fabs(x)));
@@ -203,6 +213,11 @@ void add_common_symbols(struct expr_symset *es){
 	setconst(O_TMPFILE);
 	setconst(O_TRUNC);
 	setconst(O_WRONLY);
+	setconst(EXIT_FAILURE);
+	setconst(EXIT_SUCCESS);
+	setconst(STDIN_FILENO);
+	setconst(STDOUT_FILENO);
+	setconst(STDERR_FILENO);
 	expr_symset_add(es,"pid",EXPR_CONSTANT,(double)getpid());
 	expr_symset_add(es,"uid",EXPR_CONSTANT,(double)getuid());
 	expr_symset_add(es,"gid",EXPR_CONSTANT,(double)getgid());

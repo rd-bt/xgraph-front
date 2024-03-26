@@ -85,6 +85,7 @@ double draw_connect(size_t n,double *args){
 }
 void *drawing(void *args){
 	graph_drawep_mt(&g,color,FBOLD,xep,yep,from,to,step,currents,thread);
+	//graph_drawep(&g,color,FBOLD,xep,yep,from,to,step,currents);
 	pthread_exit(NULL);
 }
 void drawat(const char *ex,const char *ey,const char *para){
@@ -129,7 +130,7 @@ void drawat(const char *ex,const char *ey,const char *para){
 	lrate=-1;
 	mrate=thread*10000;
 	pthread_create(&pt,NULL,drawing,NULL);
-	for(;mpc<10000;){
+	for(;;){
 		char *p=wbuf0;
 		int rate;
 		if(mpc==10000)break;
@@ -143,6 +144,7 @@ void drawat(const char *ex,const char *ey,const char *para){
 			if(currents[i]==DBL_MAX)pc=10000;
 			else if(currents[i]==DBL_MIN)pc=0;
 			else pc=(int)((currents[i]-s)*10000/gap);
+			//if(pc>10000)pc=10000;
 			//fprintf(stderr,"thread %d from %.2lf to %.2lf at %.2lf (%d%%)\n",i,s,s+gap,currents[i],pc);
 			rate=barlen*pc/10000;
 			srate+=pc;
@@ -339,7 +341,6 @@ int main(int argc,char **argv){
 	//g.draw_value=0;
 	graph_draw_axis(&g,0x000000,1*BOLD,gapx,gapy,32*(width+height)/8192);
 	outstring("ok\n");
-	gap=(to-from)/thread;
 	currents=malloc(thread*sizeof(double));
 
 	wbuf=malloc((thread+1)*(18+barlen)+14);
@@ -398,6 +399,7 @@ int main(int argc,char **argv){
 				errx(EXIT_FAILURE,"invaild color");
 			}
 		}else {
+			gap=(to-from)/thread;
 			if(*xexpr&&**cnt)
 			drawat(xexpr,*cnt,"t");
 		}
