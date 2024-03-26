@@ -12,6 +12,13 @@ char prefix[1024]={0};
 void level_inc(void){
 	strcat(prefix,"----");
 }
+ssize_t varindex(const struct expr *restrict ep,double *v){
+	for(size_t i=0;i<ep->vsize;++i){
+	//	printf("checking %p at %p\n",v,ep->vars[i]);
+		if(ep->vars[i]==v)return i;
+	}
+	return -1;
+}
 void level_dec(void){
 	memset(prefix+strlen(prefix)-4,0,4);
 }
@@ -44,6 +51,7 @@ int addr2sym(const struct expr *restrict ep,const struct expr_symset *restrict e
 }
 void list(const struct expr *restrict ep,const struct expr_symset *restrict esp){
 	char *sop=NULL,ssrc[EXPR_SYMLEN],sdst[EXPR_SYMLEN];
+	ssize_t index;
 	for(struct expr_inst *ip=ep->data;ip-ep->data<ep->size;++ip){
 		*ssrc=0;
 		*sdst=0;
@@ -150,15 +158,17 @@ md:
 		}
 		if(!sop)abort();
 		if(!*ssrc){
-			if(ip->un.src>=ep->vars&&ip->un.src<ep->vars+ep->vsize){
-				sprintf(ssrc,"vars[%zd]=%g",ip->un.src-ep->vars,*ip->un.src);
+			index=varindex(ep,ip->un.src);
+			if(index>=0){
+				sprintf(ssrc,"vars[%zd]=%g",index,*ip->un.src);
 			}else if(addr2sym(ep,esp,ssrc,ip->un.src)<0){
 				sprintf(ssrc,"%p",ip->un.src);
 			}
 		}
 		if(!*sdst){
-			if(ip->dst>=ep->vars&&ip->dst<ep->vars+ep->vsize)
-				sprintf(sdst,"vars[%zd]=%g",ip->dst-ep->vars,*ip->dst);
+			index=varindex(ep,ip->dst);
+			if(index>=0)
+				sprintf(sdst,"vars[%zd]=%g",index,*ip->dst);
 			else if(addr2sym(ep,esp,sdst,ip->dst)<0)
 				sprintf(sdst,"%p",ip->dst);
 		}

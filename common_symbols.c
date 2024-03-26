@@ -1,12 +1,16 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
 #include <math.h>
 #include "prime.c"
 #include <float.h>
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 double dtime(void){
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME,&ts);
@@ -27,6 +31,15 @@ double dsleep(double x){
 double draise(double x){
 	return (double)raise((int)(x));
 }
+double dhtons(double x){
+	return (double)htons((short)(x));
+}
+double dhtonl(double x){
+	return (double)htonl((int)(x));
+}
+double dclose(double x){
+	return (double)close((int)(x));
+}
 double dexit(double x){
 	exit((int)(x));
 }
@@ -34,8 +47,77 @@ double dexit(double x){
 double dkill(size_t n,double *args){
 	return (double)kill((pid_t)(args[0]),(int)(args[1]));
 }
+#define a2s(buf,args,size) buf=alloca(size+1);\
+	for(size_t i=0;i<size;++i)\
+		buf[i]=(char)*(args++)
+double dwrite(size_t n,double *args){
+	char *buf;
+	size_t size;
+	int fd;
+	if(n<2)return -1.0;
+	size=n-1;
+	fd=(int)*args;
+	++args;
+	a2s(buf,args,size);
+	return (double)write(fd,buf,size);
+}
+double dopen(size_t n,double *args){
+	char *buf;
+	int flag;
+	if(n<2)return -1.0;
+	size_t size;
+	size=n-1;
+	a2s(buf,args,size);
+	buf[size]=0;
+	flag=(int)*args;
+	return (double)open(buf,flag,0600);
+}
+double dconnect(size_t n,double *args){
+//	char *buf;
+	struct sockaddr_in sa;
+//	size_t size;
+	int fd;
+//	if(n<2)return -1.0;
+//	size=n-3;
+	memset(&sa,0,sizeof(sa));
+	fd=(int)*(args++);
+//	sa.sin_family=(short)*(args++);
+	sa.sin_family=AF_INET;
+//	a2s(buf,args,size);
+//	buf[size]=0;
+//	sa.sin_addr.s_addr=inet_addr(buf);
+	sa.sin_addr.s_addr=(in_addr_t)*(args++);
+	sa.sin_port=(short)*(args++);
+	return (double)connect(fd,(struct sockaddr *)&sa,sizeof(sa));
+}
+double dinet_addr(size_t n,double *args){
+	switch(n){
+		case 1:
+			return (double)(uint32_t)*args;
+		case 2:
+			return (double)((uint32_t)args[0]+
+				       ((uint32_t)args[1]<<16)
+				       );
+		case 3:
+			return (double)((uint32_t)args[0]+
+				       ((uint32_t)args[1]<<8)+
+				       ((uint32_t)args[2]<<16)
+				       );
+		case 4:
+			return (double)((uint32_t)args[0]+
+				       ((uint32_t)args[1]<<8)+
+				       ((uint32_t)args[2]<<16)+
+				       ((uint32_t)args[3]<<24)
+				       );
+		default:
+			return -1.0;
+	}
+}
 double dtgkill(size_t n,double *args){
 	return (double)tgkill((pid_t)(args[0]),(int)(args[1]),(int)(args[2]));
+}
+double dsocket(size_t n,double *args){
+	return (double)socket((int)(args[0]),(int)(args[1]),(int)(args[2]));
 }
 int isprime(unsigned long n){
 	if(n==2)return 1;
@@ -61,16 +143,66 @@ volatile double vx[128];
 void add_common_symbols(struct expr_symset *es){
 	char buf[32];
 	expr_symset_add(es,"abort",EXPR_ZAFUNCTION,abort);
-	expr_symset_add(es,"exit",EXPR_FUNCTION,dexit);
-	expr_symset_add(es,"isprime",EXPR_FUNCTION,disprime)->flag|=EXPR_SF_INJECTION;
-	expr_symset_add(es,"kill",EXPR_MDFUNCTION,dkill,2ul);
-	expr_symset_add(es,"prime",EXPR_FUNCTION,dprime)->flag|=EXPR_SF_INJECTION;
-	expr_symset_add(es,"prime_mt",EXPR_FUNCTION,dprime_mt)->flag|=EXPR_SF_INJECTION;
-	expr_symset_add(es,"prime_old",EXPR_FUNCTION,dprime_old)->flag|=EXPR_SF_INJECTION;
-	expr_symset_add(es,"raise",EXPR_FUNCTION,draise);
-	expr_symset_add(es,"sleep",EXPR_FUNCTION,dsleep);
-	expr_symset_add(es,"tgkill",EXPR_MDFUNCTION,dtgkill,3ul);
 	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime);
+#define setfunc(c) expr_symset_add(es,#c,EXPR_FUNCTION,d##c)
+	setfunc(close);
+	setfunc(exit);
+	setfunc(htonl);
+	setfunc(htons);
+	setfunc(isprime)->flag|=EXPR_SF_INJECTION;
+	setfunc(prime)->flag|=EXPR_SF_INJECTION;
+	setfunc(prime_mt)->flag|=EXPR_SF_INJECTION;
+	setfunc(prime_old)->flag|=EXPR_SF_INJECTION;
+	setfunc(raise);
+	setfunc(sleep);
+#define setmd(c,dim) expr_symset_add(es,#c,EXPR_MDFUNCTION,d##c,(size_t)dim)
+	setmd(connect,0);
+	setmd(inet_addr,0);
+	setmd(kill,2);
+	setmd(socket,3);
+	setmd(tgkill,3);
+	setmd(write,0);
+	setmd(open,0);
+#define setconst(c) expr_symset_add(es,#c,EXPR_CONSTANT,(double)(c))
+	setconst(AF_UNIX);
+	setconst(AF_INET);
+	setconst(AF_INET6);
+	setconst(AF_PACKET);
+	setconst(PF_UNIX);
+	setconst(PF_INET);
+	setconst(PF_INET6);
+	setconst(PF_PACKET);
+	setconst(SOCK_DGRAM);
+	setconst(SOCK_RAW);
+	setconst(SOCK_RDM);
+	setconst(SOCK_SEQPACKET);
+	setconst(SOCK_STREAM);
+	setconst(IPPROTO_ICMP);
+	setconst(IPPROTO_IP);
+	setconst(IPPROTO_IGMP);
+	setconst(IPPROTO_TCP);
+	setconst(IPPROTO_UDP);
+	setconst(O_APPEND);
+	setconst(O_ASYNC);
+	setconst(O_CLOEXEC);
+	setconst(O_CREAT);
+	setconst(O_DIRECT);
+	setconst(O_DIRECTORY);
+	setconst(O_DSYNC);
+	setconst(O_EXCL);
+	setconst(O_LARGEFILE);
+	setconst(O_NOATIME);
+	setconst(O_NOCTTY);
+	setconst(O_NDELAY);
+	setconst(O_NOFOLLOW);
+	setconst(O_NONBLOCK);
+	setconst(O_PATH);
+	setconst(O_RDONLY);
+	setconst(O_RDWR);
+	setconst(O_SYNC);
+	setconst(O_TMPFILE);
+	setconst(O_TRUNC);
+	setconst(O_WRONLY);
 	expr_symset_add(es,"pid",EXPR_CONSTANT,(double)getpid());
 	expr_symset_add(es,"uid",EXPR_CONSTANT,(double)getuid());
 	expr_symset_add(es,"gid",EXPR_CONSTANT,(double)getgid());
