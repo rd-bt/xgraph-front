@@ -85,6 +85,14 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 					sop="neg";
 					strcpy(ssrc," ");
 					break;
+			case EXPR_NOTL:
+					sop="notl";
+					strcpy(ssrc," ");
+					break;
+			case EXPR_NOT:
+					sop="not";
+					strcpy(ssrc," ");
+					break;
 			case EXPR_IF:sop="if";goto branch;
 			case EXPR_WHILE:sop="while";goto branch;
 			case EXPR_SUM:sop="sum";goto sum;
