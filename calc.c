@@ -46,7 +46,7 @@ redo:
 	result=expr_compute(ep,0);
 	if(--count)goto redo;
 	//asprintf(&buf,"%.64lf",result);
-	asprintf(&buf,x?"%.64la":"%.64lf",result);
+	asprintf(&buf,x?"%.1024la":"%.1024lf",result);
 	p=strchr(buf,'.');
 	if(p){
 		p+=strlen(p);

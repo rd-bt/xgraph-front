@@ -108,7 +108,7 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_LOOP:sop="loop";goto sum;
 			case EXPR_FOR:sop="for";goto sum;
 			case EXPR_CALLMD:sop="callmd";goto md;
-			case EXPR_CALLMDEP:sop="callmdep";goto md;
+			case EXPR_CALLME:sop="callme";goto md;
 			case EXPR_CALLHOT:
 					sop="callhot";
 					level_inc();
@@ -169,7 +169,7 @@ md:
 		if(!*ssrc){
 			index=varindex(ep,ip->un.src);
 			if(index>=0){
-				sprintf(ssrc,"vars[%zd]=%g",index,*ip->un.src);
+				sprintf(ssrc,"%p(vars[%zd])=%g",ip->un.src,index,*ip->un.src);
 			}else if(addr2sym(ep,esp,ssrc,ip->un.src)<0){
 				sprintf(ssrc,"%p",ip->un.src);
 			}
@@ -177,11 +177,11 @@ md:
 		if(!*sdst){
 			index=varindex(ep,ip->dst);
 			if(index>=0)
-				sprintf(sdst,"vars[%zd]=%g",index,*ip->dst);
+				sprintf(sdst,"%p(vars[%zd])=%g",ip->dst,index,*ip->dst);
 			else if(addr2sym(ep,esp,sdst,ip->dst)<0)
 				sprintf(sdst,"%p",ip->dst);
 		}
-		xprintf("%-9s%s\t%s\n",sop,sdst,ssrc);
+		xprintf("%-8s%s\t%s\n",sop,sdst,ssrc);
 	}
 }
 int main(int argc,char **argv){
