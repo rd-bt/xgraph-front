@@ -20,7 +20,7 @@ find the greatest prime <=555555 (555523)
 
 or
 
-./calc 'sum(n,1,100000,1,fprint(2,prime(n))),exit(0)'
+./calc 'sum(n,1,100000,1,print(prime(n))),exit(0)'
 ```
 print the first 100000 primes
 ```
