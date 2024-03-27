@@ -16,7 +16,11 @@ output the sum from 1 to 100
 ```
 find the greatest prime <=555555 (555523)
 ```
-./calc 'for(n,0,n<100000,(prime((n+1)->n)-->p,while(p>=1,(write(1,p%10+48),(p/10)->p),0),write(1,"\n")),0)'|grep '^0$' -v|rev
+./calc 'for(n,0,n<100000,(prime((n+1)->n)-->p,while(p>=1,(write(1,p%10+48),(p/10)->p),0),write(1,"\n")),exit(0))'|rev
+
+or
+
+./calc 'sum(n,1,100000,1,fprint(2,prime(n))),exit(0)'
 ```
 print the first 100000 primes
 ```
