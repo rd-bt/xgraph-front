@@ -1,7 +1,7 @@
 CC := gcc
 CFLAG := -Wall -Ofast
 LFLAG := xgraph/lib/xgraph.a -lc -lm
-all: draw calc list dump
+all: draw calc list dump symtest
 draw: main.c xgraph/lib/xgraph.a xgraph/header/xdraw.h xgraph common_symbols.c
 	$(CC) $(CFLAG) main.c common_symbols.c -o draw $(LFLAG)
 calc: calc.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
@@ -10,6 +10,8 @@ list: list.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
 	$(CC) $(CFLAG) list.c common_symbols.c -o list $(LFLAG)
 dump: dump.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
 	$(CC) $(CFLAG) dump.c common_symbols.c -o dump $(LFLAG)
+symtest: symtest.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
+	$(CC) $(CFLAG) symtest.c common_symbols.c -o symtest $(LFLAG)
 xgraph:
 	make -C xgraph
 xgraph/expr.c:
@@ -24,5 +26,5 @@ xgraph/header/expr.h:
 	make -C xgraph
 .PHONY:
 clean:
-	rm -f draw calc list dump
+	rm -f draw calc list dump symtest
 	make -C xgraph cleanall
