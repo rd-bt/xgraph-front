@@ -9,6 +9,9 @@
 #include "prime.c"
 #include <float.h>
 #include <fcntl.h>
+#include <stdarg.h>
+#include <string.h>
+#include <signal.h>
 #include <limits.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -236,21 +239,21 @@ void add_common_symbols(struct expr_symset *es){
 	setconst(O_ASYNC);
 	setconst(O_CLOEXEC);
 	setconst(O_CREAT);
-	setconst(O_DIRECT);
+	//setconst(O_DIRECT);
 	setconst(O_DIRECTORY);
 	setconst(O_DSYNC);
 	setconst(O_EXCL);
-	setconst(O_LARGEFILE);
-	setconst(O_NOATIME);
+	//setconst(O_LARGEFILE);
+	//setconst(O_NOATIME);
 	setconst(O_NOCTTY);
 	setconst(O_NDELAY);
 	setconst(O_NOFOLLOW);
 	setconst(O_NONBLOCK);
-	setconst(O_PATH);
+	//setconst(O_PATH);
 	setconst(O_RDONLY);
 	setconst(O_RDWR);
 	setconst(O_SYNC);
-	setconst(O_TMPFILE);
+	//setconst(O_TMPFILE);
 	setconst(O_TRUNC);
 	setconst(O_WRONLY);
 	setconst(EXIT_FAILURE);
