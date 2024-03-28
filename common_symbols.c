@@ -9,8 +9,35 @@
 #include "prime.c"
 #include <float.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+int vfdprintf_atomic(int fd,const char *restrict format,va_list ap){
+	int r;
+	char buf[PIPE_BUF];
+	if((r=vsnprintf(buf,PIPE_BUF,format,ap))==EOF)return EOF;
+	return write(fd,buf,r>PIPE_BUF?PIPE_BUF:r);
+}
+int fdprintf_atomic(int fd,const char *restrict format,...){
+	int r;
+	va_list ap;
+	va_start(ap,format);
+	r=vfdprintf_atomic(fd,format,ap);
+	va_end(ap);
+	return r;
+}
+int fprintd(int fd,double v){
+	char buf[PIPE_BUF],*p;
+	sprintf(buf,"%.64lf",v);
+	p=strchr(buf,'.');
+	if(p){
+		p+=strlen(p);
+		while(*(--p)=='0')*p=0;
+		if(*p=='.')*p=0;
+
+	}
+	return fdprintf_atomic(fd,"%s\n",buf);
+}
 double dtime(void){
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME,&ts);
@@ -149,9 +176,20 @@ double dprime_old(double x){
 double disprime(double x){
 	return (double)isprime((unsigned long)(fabs(x)));
 }
+double dprint(double x){
+	return (double)fprintd(STDOUT_FILENO,x);
+}
+double dfprint(size_t n,double *args){
+	return (double)fprintd((int)args[0],args[1]);
+}
 volatile double vx[128];
 void add_common_symbols(struct expr_symset *es){
 	char buf[32];
+	for(size_t i=0;i<(sizeof(vx)/sizeof(*vx));++i){
+		sprintf(buf,"x%zu",i);
+		expr_symset_add(es,buf,EXPR_VARIABLE,vx+i);
+	}
+	//puts("vx ok");
 	expr_symset_add(es,"abort",EXPR_ZAFUNCTION,abort);
 	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime);
 #define setfunc(c) expr_symset_add(es,#c,EXPR_FUNCTION,d##c)
@@ -163,10 +201,12 @@ void add_common_symbols(struct expr_symset *es){
 	setfunc(prime)->flag|=EXPR_SF_INJECTION;
 	setfunc(prime_mt)->flag|=EXPR_SF_INJECTION;
 	setfunc(prime_old)->flag|=EXPR_SF_INJECTION;
+	setfunc(print);
 	setfunc(raise);
 	setfunc(sleep);
 #define setmd(c,dim) expr_symset_add(es,#c,EXPR_MDFUNCTION,d##c,(size_t)dim)
 	setmd(connect,0);
+	setmd(fprint,2);
 	setmd(inet_addr,0);
 	setmd(kill,2);
 	setmd(socket,3);
@@ -221,8 +261,5 @@ void add_common_symbols(struct expr_symset *es){
 	expr_symset_add(es,"pid",EXPR_CONSTANT,(double)getpid());
 	expr_symset_add(es,"uid",EXPR_CONSTANT,(double)getuid());
 	expr_symset_add(es,"gid",EXPR_CONSTANT,(double)getgid());
-	for(size_t i=0;i<(sizeof(vx)/sizeof(*vx));++i){
-		sprintf(buf,"x%zu",i);
-		expr_symset_add(es,buf,EXPR_VARIABLE,vx+i);
-	}
+
 }

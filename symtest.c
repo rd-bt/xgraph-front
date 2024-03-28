@@ -3,45 +3,69 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
 #include <err.h>
 void add_common_symbols(struct expr_symset *es);
 double dtime(void);
 struct expr_symset es[1];
+volatile sig_atomic_t vsi;
+void psig(int sig){
+	fprintf(stderr,"final i:%d\n",vsi);
+}
+const char pool[]={"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_@"};
+void randstr(char *buf,size_t sz){
+	if(sz<2)sz=1;
+	else --sz;
+	do
+		*(buf++)=pool[rand()%sizeof(pool)];
+	while(--sz);
+	*buf=0;
+}
 int main(int argc,char **argv){
 	char buf[32];
+	char target[32]={"x386674"};
 	double st;
-	size_t i,l=0,count=argc>2?atol(argv[2]):1000,n=argc>1?atol(argv[1]):1000;
+	size_t k,suc=0,l=0,count=argc>2?atol(argv[2]):1000,n=argc>1?atol(argv[1]):1000;
+	size_t i;
+	struct expr_symbol *esp;
+	if(argc>3)strcpy(target,argv[3]);
 	init_expr_symset(es);
-	add_common_symbols(es);
-	puts("creating");
-	for(i=0;i<=n;++i){
-
-		sprintf(buf,"x%zu",i);
-		expr_symset_add(es,buf,EXPR_CONSTANT,(double)i);
-		if(i-l>=10000){
-			printf("added x%zu\n",i);
+	//add_common_symbols(es);
+	fputs("creating\n",stderr);
+	st=dtime();
+	srand(time(NULL)+getpid());
+	srandom(time(NULL)+getpid());
+	signal(SIGABRT,psig);
+	for(i=1;i<=n;++i){
+		//sfprintf(stderr,buf,"x%zu",i);
+		randstr(buf,rand()%28+4);
+		expr_symset_add(es,buf,EXPR_CONSTANT,(double)i)&&++suc;
+		vsi=i;
+		if(i-l>=25000){
+			fprintf(stderr,"added %zuth %-32s\r",i,buf);
+			fflush(stdout);
 			l=i;
 		}
 	}
-	if(i!=l)printf("added x%zu\n",n);
-	fputs("searching ",stdout);
+	expr_symset_add(es,"mustin",EXPR_CONSTANT,-1.0)&&++suc;
+	fprintf(stderr,"added %s %zuth\t%zu success\n",buf,n,suc);
+	fprintf(stderr,"size:%zu depth:%zu length:%zudepth*length:\n",es->size,es->depth,es->length);
+	fprintf(stdout,"%lg\n",(double)es->depth*es->length);
+	fprintf(stderr,"creating time: %lg s\n",dtime()-st);
+	if(!count)goto nosearch;
+	fputs("searching\n",stderr);
 	i=0;
-	while(n){
-		++i;
-		n/=10;
-	}
-	fwrite("x91664684968694845678883",1,i,stdout);
-	fputs("\n",stdout);
+	k=strlen(target);
+	fprintf(stderr,"%s\n",target);
 	st=dtime();
-
-			printf("i %zu\n",i);
 	while(--count)
-	expr_symset_search(es,"x91664684968694845678883",i);
-	expr_symset_search(es,"x91664684968694845678883",i)?
-		puts("ok"):puts("fail");
-	printf("searched for %lg s\n",dtime()-st);
+	esp=expr_symset_search(es,target,k);
+	expr_symset_search(es,target,k)?
+		fprintf(stderr,"found %s=%zd\n",esp->str,(ssize_t)esp->un.value):fputs("fail\n",stderr);
+	fprintf(stderr,"searching time: %lg s\n",dtime()-st);
+nosearch:
 	expr_symset_free(es);
 	return 0;
 }

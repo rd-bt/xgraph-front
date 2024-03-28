@@ -14,13 +14,15 @@ unsigned long prime(unsigned long x){
 	if(!n){
 		//pthread_mutex_lock(&mutex);
 		//if(!n){
-		p=malloc((size=9ul)*sizeof(unsigned long));
-		if(!p){
+		lp=malloc((size=9ul)*sizeof(unsigned long));
+		if(!lp)return 0ul;
+		p=lp;
+		/*if(!p){
 			warn("IN prime()\n"
 				"CANNOT ALLOCATE MEMORY");
 			warnx("ABORTING");
 			abort();
-		}
+		}*/
 		p[0]=1;
 		p[1]=2;
 		p[2]=3;
@@ -37,16 +39,18 @@ unsigned long prime(unsigned long x){
 	if(x<=n)return p[x];
 	//if(x<=n)goto end;
 	if(x+1>=size){
-		size=(x+1025ul)&~1023ul;
-		lp=p;
-		p=realloc(p,size*sizeof(unsigned long));
-		if(!p){
+		sizem1=(x+1025ul)&~1023ul;
+		lp=realloc(p,sizem1*sizeof(unsigned long));
+		if(!lp)return 0ul;
+		p=lp;
+		size=sizem1;
+		/*if(!p){
 			warn("IN prime() p[%lu]=%lu size=%lu\n"
 				"CANNOT REALLOCATE MEMORY",n,lp[n],size);
 			free(lp);
 			warnx("ABORTING");
 			abort();
-		}
+		}*/
 	}
 	sizem1=size-1;
 	for(unsigned long i=p[n]+(im65?2:4);n<sizem1;){

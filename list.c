@@ -32,8 +32,8 @@ int main(int c,char **argv){
 				break;
 			case EXPR_MDFUNCTION:
 			case EXPR_MDEPFUNCTION:
-				if(p->un.md.dim)
-				printf("dimension: %zu",p->un.md.dim);
+				if(p->dim)
+				printf("dimension: %hd",p->dim);
 				else
 				printf("dimension: no limit");
 				break;
