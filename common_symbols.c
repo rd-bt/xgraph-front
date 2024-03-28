@@ -41,6 +41,15 @@ int fprintd(int fd,double v){
 	}
 	return fdprintf_atomic(fd,"%s\n",buf);
 }
+int fprintda(int fd,double *v,size_t n){
+	int r;
+	if(!n)return 0;
+	r=0;
+	do
+		r+=fprintd(fd,*(v++));
+	while(--n);
+	return r;
+}
 double dtime(void){
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME,&ts);
@@ -187,6 +196,12 @@ double dprint(double x){
 double dfprint(size_t n,double *args){
 	return (double)fprintd((int)args[0],args[1]);
 }
+double dprinta(size_t n,double *args){
+	return (double)fprintda(STDOUT_FILENO,args,n);
+}
+double dfprinta(size_t n,double *args){
+	return (double)fprintda((int)args[0],args+1,n-1);
+}
 volatile double vx[128];
 void add_common_symbols(struct expr_symset *es){
 	char buf[32];
@@ -212,8 +227,10 @@ void add_common_symbols(struct expr_symset *es){
 #define setmd(c,dim) expr_symset_add(es,#c,EXPR_MDFUNCTION,d##c,(size_t)dim)
 	setmd(connect,0);
 	setmd(fprint,2);
+	setmd(fprinta,0);
 	setmd(inet_addr,0);
 	setmd(kill,2);
+	setmd(printa,0);
 	setmd(socket,3);
 	setmd(tgkill,3);
 	setmd(write,0);
