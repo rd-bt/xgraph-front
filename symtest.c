@@ -38,7 +38,7 @@ int main(int argc,char **argv){
 	srand(time(NULL)+getpid());
 	srandom(time(NULL)+getpid());
 	signal(SIGABRT,psig);
-	for(i=1;suc<=n;++i){
+	for(i=1;suc<n;++i){
 		//sfprintf(stderr,buf,"x%zu",i);
 		randstr(buf,rand()%2+3);
 		(expr_symset_add(es,buf,EXPR_CONSTANT,(double)i)&&++suc);
@@ -51,7 +51,7 @@ int main(int argc,char **argv){
 		}
 	}
 	expr_symset_add(es,"mustin",EXPR_CONSTANT,-1.0);
-	fprintf(stderr,"added %s %zuth\t%zu success\n",buf,n,suc);
+	fprintf(stderr,"added %zu/%zuth %-32s\n",suc,i-1,buf);
 	fprintf(stderr,"size:%zu depth:%zu length:%zu depth*length:\n",es->size,es->depth,es->length);
 	fprintf(stdout,"%lg\n",(double)es->depth*es->length);
 	fprintf(stderr,"creating time: %lg s\n",dtime()-st);

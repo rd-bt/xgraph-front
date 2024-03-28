@@ -75,6 +75,7 @@ double dexit(double x){
 }
 
 double dkill(size_t n,double *args){
+	if(n!=2)abort();
 	return (double)kill((pid_t)(args[0]),(int)(args[1]));
 }
 #define a2s(buf,args,size) buf=alloca(size+1);\
@@ -144,7 +145,8 @@ double dinet_addr(size_t n,double *args){
 	}
 }
 double dtgkill(size_t n,double *args){
-	return (double)tgkill((pid_t)(args[0]),(int)(args[1]),(int)(args[2]));
+	int tgkill(int,int,int);
+	return (double)tgkill((int)(args[0]),(int)(args[1]),(int)(args[2]));
 }
 double dsocket(size_t n,double *args){
 	return (double)socket((int)(args[0]),(int)(args[1]),(int)(args[2]));
@@ -258,6 +260,39 @@ void add_common_symbols(struct expr_symset *es){
 	setconst(O_WRONLY);
 	setconst(EXIT_FAILURE);
 	setconst(EXIT_SUCCESS);
+	setconst(SIGHUP);
+	setconst(SIGINT);
+	setconst(SIGQUIT);
+	setconst(SIGILL);
+	setconst(SIGTRAP);
+	setconst(SIGABRT);
+	setconst(SIGBUS);
+	setconst(SIGFPE);
+	setconst(SIGKILL);
+	setconst(SIGUSR1);
+	setconst(SIGSEGV);
+	setconst(SIGUSR2);
+	setconst(SIGPIPE);
+	setconst(SIGALRM);
+	setconst(SIGTERM);
+	setconst(SIGSTKFLT);
+	setconst(SIGCHLD);
+	setconst(SIGCONT);
+	setconst(SIGSTOP);
+	setconst(SIGTSTP);
+	setconst(SIGTTIN);
+	setconst(SIGTTOU);
+	setconst(SIGURG);
+	setconst(SIGXCPU);
+	setconst(SIGXFSZ);
+	setconst(SIGVTALRM);
+	setconst(SIGPROF);
+	setconst(SIGWINCH);
+	setconst(SIGIO);
+	setconst(SIGPWR);
+	setconst(SIGSYS);
+	setconst(SIGRTMIN);
+	setconst(SIGRTMAX);
 	setconst(STDIN_FILENO);
 	setconst(STDOUT_FILENO);
 	setconst(STDERR_FILENO);
