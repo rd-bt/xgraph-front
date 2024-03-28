@@ -41,7 +41,7 @@ int main(int argc,char **argv){
 	for(i=1;suc<n;++i){
 		//sfprintf(stderr,buf,"x%zu",i);
 		randstr(buf,rand()%2+3);
-		(expr_symset_add(es,buf,EXPR_CONSTANT,(double)i)&&++suc);
+		if(expr_symset_add(es,buf,EXPR_CONSTANT,(double)i))++suc;
 		vssuc=suc;
 		vsi=i;
 		if(i-l>=25000){
