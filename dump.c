@@ -50,7 +50,7 @@ int addr2sym(const struct expr *restrict ep,const struct expr_symset *restrict e
 	return -1;
 }
 void list(const struct expr *restrict ep,const struct expr_symset *restrict esp){
-	char *sop=NULL,ssrc[EXPR_SYMLEN],sdst[EXPR_SYMLEN];
+	char *sop=NULL,ssrc[EXPR_SYMLEN],sdst[EXPR_SYMLEN],ssym[EXPR_SYMLEN];
 	ssize_t index;
 	xprintf("%zu instructions %zu vars in total\n",ep->size,ep->vsize);
 	for(struct expr_inst *ip=ep->data;ip-ep->data<ep->size;++ip){
@@ -69,7 +69,7 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 					strcpy(ssrc," ");
 					break;
 			case EXPR_CALL:sop="call";break;
-			case EXPR_CALLZA:sop="callza";break;
+			case EXPR_ZA:sop="za";break;
 			case EXPR_ADD:sop="add";break;
 			case EXPR_SUB:sop="sub";break;
 			case EXPR_MUL:sop="mul";break;
@@ -107,10 +107,11 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_LCMN:sop="lcmn";goto sum;
 			case EXPR_LOOP:sop="loop";goto sum;
 			case EXPR_FOR:sop="for";goto sum;
-			case EXPR_CALLMD:sop="callmd";goto md;
-			case EXPR_CALLME:sop="callme";goto md;
-			case EXPR_CALLHOT:
-					sop="callhot";
+			case EXPR_MD:sop="md";goto md;
+			case EXPR_ME:sop="me";goto md;
+			case EXPR_VMD:sop="vmd";goto vmd;
+			case EXPR_HOT:
+					sop="hot";
 					level_inc();
 					xprintf("hot function %p\n",ip->un.hotfunc);
 					list(ip->un.hotfunc,esp);
@@ -164,6 +165,24 @@ md:
 					}
 					level_dec();
 					break;
+vmd:
+					level_inc();
+					if(addr2sym(ep,esp,ssym,ip->un.ev->func)<0)
+						sprintf(ssym,"%p",ip->un.ev->func);
+					xprintf("struct expr_vmdinfo %p index:%p func:%s\n",ip->un.ev,&ip->un.ev->index,ssym);
+					xprintf("%p->from\n",ip->un.ev);
+					list(ip->un.ev->from,esp);
+					xprintf("%p->to\n",ip->un.ev);
+					list(ip->un.ev->to,esp);
+					xprintf("%p->step\n",ip->un.ev);
+					list(ip->un.ev->step,esp);
+					xprintf("%p->ep\n",ip->un.ev);
+					list(ip->un.ev->ep,esp);
+					xprintf("%p->max\n",ip->un.ev);
+					list(ip->un.ev->max,esp);
+					level_dec();
+					break;
+
 		}
 		if(!sop)abort();
 		if(!*ssrc){

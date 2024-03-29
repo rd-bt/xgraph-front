@@ -199,6 +199,18 @@ double dfprint(size_t n,double *args){
 double dprinta(size_t n,double *args){
 	return (double)fprintda(STDOUT_FILENO,args,n);
 }
+double dsorta_old(size_t n,double *args){
+	expr_sort_old(args,n);
+	return (double)fprintda(STDOUT_FILENO,args,n);
+}
+double dsorta(size_t n,double *args){
+	expr_sort(args,n);
+	return (double)fprintda(STDOUT_FILENO,args,n);
+}
+double dfrya(size_t n,double *args){
+	expr_fry(args,n);
+	return (double)fprintda(STDOUT_FILENO,args,n);
+}
 double dfprinta(size_t n,double *args){
 	return (double)fprintda((int)args[0],args+1,n-1);
 }
@@ -228,9 +240,12 @@ void add_common_symbols(struct expr_symset *es){
 	setmd(connect,0);
 	setmd(fprint,2);
 	setmd(fprinta,0);
+	setmd(frya,0);
 	setmd(inet_addr,0);
 	setmd(kill,2);
 	setmd(printa,0);
+	setmd(sorta,0);
+	setmd(sorta_old,0);
 	setmd(socket,3);
 	setmd(tgkill,3);
 	setmd(write,0);

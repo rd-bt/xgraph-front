@@ -10,10 +10,11 @@ const char *t2s[]={
 	[EXPR_FUNCTION]="Function",
 	[EXPR_MDFUNCTION]="Multi-dimension function",
 	[EXPR_MDEPFUNCTION]="Multi-dimension function*",
-	[EXPR_HOTFUNCTION]="Hot function*",
-	[EXPR_ZAFUNCTION]="Zero-argument function*"
+	[EXPR_HOTFUNCTION]="Hot function",
+	[EXPR_ZAFUNCTION]="Zero-argument function"
 };
 int main(int c,char **argv){
+	srand48(time(NULL)+getpid());
 	for(const struct expr_builtin_keyword *p=expr_keywords;p->str;++p){
 		printf("%-12s\tKeyword \t%s(%s)\n",p->str,p->str,p->desc);
 	}
@@ -36,6 +37,9 @@ int main(int c,char **argv){
 				printf("dimension: %hd",p->dim);
 				else
 				printf("dimension: no limit");
+				break;
+			case EXPR_ZAFUNCTION:
+				printf("f():%.4g",p->un.zafunc());
 				break;
 
 		}
