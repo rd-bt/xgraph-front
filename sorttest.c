@@ -6,6 +6,7 @@
 #include <signal.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
+#include <limits.h>
 #include <err.h>
 void add_common_symbols(struct expr_symset *es);
 double dtime(void);
