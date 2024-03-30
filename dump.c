@@ -178,8 +178,6 @@ vmd:
 					list(ip->un.ev->step,esp);
 					xprintf("%p->ep\n",ip->un.ev);
 					list(ip->un.ev->ep,esp);
-					xprintf("%p->max\n",ip->un.ev);
-					list(ip->un.ev->max,esp);
 					level_dec();
 					break;
 

@@ -8,6 +8,7 @@
 #include <time.h>
 #include <limits.h>
 #include <err.h>
+//#define printf(f,...) 1
 void add_common_symbols(struct expr_symset *es);
 double dtime(void);
 struct expr_symset es[1];
@@ -36,15 +37,21 @@ int main(int argc,char **argv){
 	srand48(time(NULL)+getpid());
 	srand(time(NULL)+getpid());
 	srandom(time(NULL)+getpid());
-	for(size_t i=from;i<to;++i,printf("\n")){
+	for(size_t i=from;i<=to;++i,printf("\n")){
 		t3=0.0;
+		void *r;
 		for(size_t j=0;j<times;++j){
 			randomize(rv,i);
 			dt=dtime();
-			expr_sort3(rv,i);
+			r=expr_sort3(rv,i,malloc);
 			t3+=dtime()-dt;
+			if(!r){
+				fputs("CANNOT ALLOCATE MEMORY\n",stderr);
+				abort();
+			}
+			free(r);
 		}
-		printf("n=%zu\t expr_sort3: %zums",i,(size_t)(t3*1000));
+		printf("n=%zu\t expr_sort3: %zums %p",i,(size_t)(t3*1000),r);
 		//continue;
 		t=0.0;
 		for(size_t j=0;j<times;++j){

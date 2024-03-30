@@ -204,7 +204,9 @@ double dsorta_old(size_t n,double *args){
 	return (double)fprintda(STDOUT_FILENO,args,n);
 }
 double dsorta(size_t n,double *args){
-	expr_sort(args,n);
+	void *r=expr_sort3(args,n,malloc);
+	if(!r)return NAN;
+	free(r);
 	return (double)fprintda(STDOUT_FILENO,args,n);
 }
 double dfrya(size_t n,double *args){

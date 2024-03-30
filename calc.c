@@ -43,7 +43,7 @@ int main(int argc,char **argv){
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
 redo:
-	result=expr_compute(ep,0);
+	result=expr_eval(ep,0);
 	if(--count)goto redo;
 	//asprintf(&buf,"%.64lf",result);
 	asprintf(&buf,x?"%.1024la":"%.1024lf",result);
