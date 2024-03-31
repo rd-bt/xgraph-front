@@ -85,12 +85,16 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 					sop="neg";
 					strcpy(ssrc," ");
 					break;
+			case EXPR_NOT:
+					sop="not";
+					strcpy(ssrc," ");
+					break;
 			case EXPR_NOTL:
 					sop="notl";
 					strcpy(ssrc," ");
 					break;
-			case EXPR_NOT:
-					sop="not";
+			case EXPR_TSTL:
+					sop="tstl";
 					strcpy(ssrc," ");
 					break;
 			case EXPR_IF:sop="if";goto branch;
@@ -122,6 +126,9 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_LT:sop="lt";break;
 			case EXPR_LE:sop="le";break;
 			case EXPR_SEQ:sop="seq";break;
+			case EXPR_SNE:sop="sne";break;
+			case EXPR_SGE:sop="sge";break;
+			case EXPR_SLE:sop="sle";break;
 			case EXPR_EQ:sop="eq";break;
 			case EXPR_NE:sop="ne";break;
 			case EXPR_ANDL:sop="andl";break;
@@ -203,6 +210,7 @@ vmd:
 }
 int main(int argc,char **argv){
 	char *buf,*p,*p1;
+	int flag=0;
 	if(argc<2)
 	errx(EXIT_FAILURE,"no expression input");
 	struct expr_symset *es=new_expr_symset();
@@ -226,10 +234,11 @@ int main(int argc,char **argv){
 			}
 			expr_symset_add(es,p1,EXPR_HOTFUNCTION,p,buf);
 				//->flag=EXPR_SF_INJECTION
-		}
+		}else if(!strcmp(argv[i],"--no"))
+			flag|=EXPR_IF_NOOPTIMIZE;
 	}
 	add_common_symbols(es);
-	if(init_expr(ep,argv[argc-1],"t",es)<0){
+	if(init_expr5(ep,argv[argc-1],"t",es,flag)<0){
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
 	list(ep,ep->sset);

@@ -6,16 +6,20 @@
 #include "xgraph/header/expr.h"
 #include <time.h>
 #include <err.h>
+//#define fprintf(...) 1
+//#define puts(...) 1
 void add_common_symbols(struct expr_symset *es);
 int main(int argc,char **argv){
 	char *buf,*p,*p1;
+	struct expr ep[1];
 	long count=1,x=0;
 	double result;
+	//init_expr(ep,"(t^2+1)*sum(n,1,10,1,sin(n*t))","t",NULL);
+	//expr_free(ep);
 	if(argc<2)
 	errx(EXIT_FAILURE,"no expression input");
 	struct expr_symset *es=new_expr_symset();
 	//char buf[9999]={"sum(n,1,100,1,n)"};
-	struct expr ep[1];
 	//double n=6.6;
 	srand48(getpid()^time(NULL));
 	//printf("%lu\n",(unsigned long)&n);
