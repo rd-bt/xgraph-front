@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
+#include <math.h>
 #include <err.h>
 void add_common_symbols(struct expr_symset *es);
 char prefix[1024]={0};
@@ -64,10 +65,23 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 				sop="const";
 				sprintf(ssrc,"%g",ip->un.value);
 				break;
+			case EXPR_BZ:
+				sop="bz";
+				sprintf(ssrc,"[%zd]",ip->un.aim-ep->data);
+				break;
+			case EXPR_BNZ:
+				sop="bnz";
+				sprintf(ssrc,"[%zd]",ip->un.aim-ep->data);
+				break;
+			case EXPR_B:
+				sop="b";
+				strcpy(ssrc," ");
+				sprintf(sdst,"[%zd]",ip->un.aim-ep->data);
+				break;
 			case EXPR_INPUT:
-					sop="input";
-					strcpy(ssrc," ");
-					break;
+				sop="input";
+				strcpy(ssrc," ");
+				break;
 			case EXPR_CALL:sop="call";break;
 			case EXPR_ZA:sop="za";break;
 			case EXPR_ADD:sop="add";break;
@@ -97,8 +111,8 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 					sop="tstl";
 					strcpy(ssrc," ");
 					break;
-			case EXPR_IF:sop="if";goto branch;
-			case EXPR_WHILE:sop="while";goto branch;
+			//case EXPR_IF:sop="if";goto branch;
+			//case EXPR_WHILE:sop="while";goto branch;
 			case EXPR_SUM:sop="sum";goto sum;
 			case EXPR_INT:sop="int";goto sum;
 			case EXPR_PROD:sop="prod";goto sum;
@@ -152,7 +166,7 @@ sum:
 					list(ip->un.es->ep,esp);
 					level_dec();
 					break;
-branch:
+/*branch:
 					level_inc();
 					xprintf("struct expr_branchinfo %p\n",ip->un.eb);
 					xprintf("%p->cond\n",ip->un.eb);
@@ -162,7 +176,7 @@ branch:
 					xprintf("%p->value\n",ip->un.eb);
 					list(ip->un.eb->value,esp);
 					level_dec();
-					break;
+					break;*/
 md:
 					level_inc();
 					xprintf("struct expr_mdinfo %p dim=%zu\n",ip->un.em,ip->un.em->dim);
@@ -193,19 +207,25 @@ vmd:
 		if(!*ssrc){
 			index=varindex(ep,ip->un.src);
 			if(index>=0){
-				sprintf(ssrc,"%p(vars[%zd])=%g",ip->un.src,index,*ip->un.src);
+				//sprintf(ssrc,"%p(vars[%zd])=%g",ip->un.src,index,*ip->un.src);
+				if(isnan(*ip->un.src))
+					sprintf(ssrc,"vars[%zd]",index);
+				else
+					sprintf(ssrc,"vars[%zd]=%g",index,*ip->un.src);
 			}else if(addr2sym(ep,esp,ssrc,ip->un.src)<0){
 				sprintf(ssrc,"%p",ip->un.src);
 			}
 		}
 		if(!*sdst){
 			index=varindex(ep,ip->dst);
-			if(index>=0)
-				sprintf(sdst,"%p(vars[%zd])=%g",ip->dst,index,*ip->dst);
+			if(index>=0)if(isnan(*ip->dst))
+				sprintf(sdst,"vars[%zd]",index);
+			else
+				sprintf(sdst,"vars[%zd]=%g",index,*ip->dst);
 			else if(addr2sym(ep,esp,sdst,ip->dst)<0)
 				sprintf(sdst,"%p",ip->dst);
 		}
-		xprintf("%-8s%s\t%s\n",sop,sdst,ssrc);
+		xprintf("[%zu]%-5s    %s    %s\n",ip-ep->data,sop,sdst,ssrc);
 	}
 }
 int main(int argc,char **argv){

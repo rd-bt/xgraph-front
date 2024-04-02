@@ -44,7 +44,8 @@ int main(int argc,char **argv){
 	}
 	add_common_symbols(es);
 	if(init_expr(ep,argv[argc-1],"t",es)<0){
-		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
+		warnx("expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
+		goto fail;
 	}
 redo:
 	result=expr_eval(ep,0);
@@ -63,4 +64,7 @@ redo:
 	expr_free(ep);
 	expr_symset_free(es);
 	return 0;
+fail:
+	expr_symset_free(es);
+	return EXIT_FAILURE;
 }
