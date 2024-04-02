@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "xgraph/header/expr.h"
 #include <time.h>
+#include <math.h>
 #include <err.h>
 void add_common_symbols(struct expr_symset *es);
 char prefix[1024]={0};
@@ -193,15 +194,20 @@ vmd:
 		if(!*ssrc){
 			index=varindex(ep,ip->un.src);
 			if(index>=0){
-				sprintf(ssrc,"%p(vars[%zd])=%g",ip->un.src,index,*ip->un.src);
+				if(isnan(*ip->un.src))
+					sprintf(ssrc,"vars[%zd]",index);
+				else
+					sprintf(ssrc,"vars[%zd]=%g",index,*ip->un.src);
 			}else if(addr2sym(ep,esp,ssrc,ip->un.src)<0){
 				sprintf(ssrc,"%p",ip->un.src);
 			}
 		}
 		if(!*sdst){
 			index=varindex(ep,ip->dst);
-			if(index>=0)
-				sprintf(sdst,"%p(vars[%zd])=%g",ip->dst,index,*ip->dst);
+			if(index>=0)if(isnan(*ip->dst))
+				sprintf(sdst,"vars[%zd]",index);
+			else
+				sprintf(sdst,"vars[%zd]=%g",index,*ip->dst);
 			else if(addr2sym(ep,esp,sdst,ip->dst)<0)
 				sprintf(sdst,"%p",ip->dst);
 		}

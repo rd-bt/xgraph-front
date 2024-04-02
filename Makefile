@@ -28,5 +28,5 @@ xgraph/header/expr.h:
 	make -C xgraph
 .PHONY:
 clean:
-	rm -f draw calc list dump symtest
+	rm -f draw calc list dump symtest sorttest
 	make -C xgraph cleanall
