@@ -70,9 +70,9 @@ int force_ffmpeg=0;
 int32_t width=RATIO,height=RATIO;
 unsigned int sleep_gap=12500,barlen,textline=0;
 uint32_t color=0xff0000;
-struct expr *xep,*yep;
 struct graph g;
 double step=0.0;
+struct expr *xeps,*yeps;
 struct winsize wsize;
 struct expr_symset es[1];
 double maxy=SIZE,miny=-SIZE,maxx=SIZE,minx=-SIZE,from=-SIZE,to=SIZE,gapx=1.0,gapy=1.0;
@@ -84,24 +84,18 @@ double draw_connect(size_t n,double *args){
 	return NAN;
 }
 void *drawing(void *args){
-	graph_drawep_mt(&g,color,FBOLD,xep,yep,from,to,step,currents,thread);
+	graph_drawep_mt(&g,color,FBOLD,xeps,yeps,from,to,step,currents,thread);
 	//graph_drawep(&g,color,FBOLD,xep,yep,from,to,step,currents);
 	pthread_exit(NULL);
 }
 void drawat(const char *ex,const char *ey,const char *para){
 	int srate,lrate,mrate,pc,mpc;
 	pthread_t pt;
-	char *wbuf0;
-	for(int i=0;i<thread;++i){
-
-		init_expr(xep+i,ex,para,es);
-
-		if(xep[i].error)errx(EXIT_FAILURE,"%d x expression error:%s (%s)",i,expr_error(xep[i].error),xep[i].errinfo);
-
-		init_expr(yep+i,ey,para,es);
-
-		if(yep[i].error)errx(EXIT_FAILURE,"%d x expression error:%s (%s)",i,expr_error(yep[i].error),yep[i].errinfo);
-	}
+	char *wbuf0,ei[EXPR_SYMLEN];
+		xeps=new_expr7(ex,para,es,0,thread,&pc,ei);
+		if(!xeps)errx(EXIT_FAILURE,"x expression error:%s (%s)",expr_error(pc),ei);
+		yeps=new_expr7(ey,para,es,0,thread,&pc,ei);
+		if(!yeps)errx(EXIT_FAILURE,"y expression error:%s (%s)",expr_error(pc),ei);
 	for(int i=0;i<thread;++i){
 		currents[i]=DBL_MIN;
 	}
@@ -179,10 +173,8 @@ void drawat(const char *ex,const char *ey,const char *para){
 	}
 	//write(STDERR_FILENO,"\033[?25h",6);
 	pthread_join(pt,NULL);
-	for(int i=0;i<thread;++i){
-		expr_free(xep+i);
-		expr_free(yep+i);
-	}
+	expr_free(xeps);
+	expr_free(yeps);
 }
 void writefile(const char *file,const void *buf,size_t sz){
 	int pfd[2];
@@ -255,7 +247,7 @@ int main(int argc,char **argv){
 		if(!strcmp(*cnt,"--thread")){
 			if(sscanf(*(++cnt),"%d",&thread)<1)errx(EXIT_FAILURE,"invaild thread");
 		}else if(!strcmp(*cnt,"--ratio")){
-			if(sscanf(*(++cnt),"%dx%d",&width,&height)<2)errx(EXIT_FAILURE,"invaild thread");
+			if(sscanf(*(++cnt),"%dx%d",&width,&height)<2)errx(EXIT_FAILURE,"invaild ratio");
 		}else if(!strcmp(*cnt,"--frombmp")){
 			frombmp=*(++cnt);
 		}else if(!strcmp(*cnt,"-x")){
@@ -346,8 +338,6 @@ int main(int argc,char **argv){
 	wbuf=malloc((thread+1)*(18+barlen)+14);
 	bar=malloc(3+barlen);
 
-	xep=malloc((thread<<1)*sizeof(struct expr));
-	yep=xep+thread;
 	expr_symset_add(es,"connect",EXPR_MDFUNCTION,draw_connect,4ul);
 	add_common_symbols(es);
 	//draw start
@@ -407,7 +397,6 @@ int main(int argc,char **argv){
 	//draw end
 	expr_symset_free(es);
 
-	free(xep);
 	free((void *)currents);
 	free(wbuf);
 	free(bar);
