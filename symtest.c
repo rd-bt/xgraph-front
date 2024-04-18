@@ -40,7 +40,7 @@ int main(int argc,char **argv){
 	signal(SIGABRT,psig);
 	for(i=1;suc<n;++i){
 		//sfprintf(stderr,buf,"x%zu",i);
-		randstr(buf,rand()%2+3);
+		randstr(buf,rand()%8+3);
 		if(expr_symset_add(es,buf,EXPR_CONSTANT,(double)i))++suc;
 		vssuc=suc;
 		vsi=i;

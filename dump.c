@@ -73,6 +73,7 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_ZA:sop="za";break;
 			case EXPR_ADD:sop="add";break;
 			case EXPR_SUB:sop="sub";break;
+			case EXPR_NEXT:sop="next";break;
 			case EXPR_MUL:sop="mul";break;
 			case EXPR_DIV:sop="div";break;
 			case EXPR_MOD:sop="mod";break;
@@ -143,12 +144,12 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 sum:
 					level_inc();
 					xprintf("struct expr_suminfo %p index:%p\n",ip->un.es,&ip->un.es->index);
-					xprintf("%p->from\n",ip->un.es);
-					list(ip->un.es->from,esp);
-					xprintf("%p->to\n",ip->un.es);
-					list(ip->un.es->to,esp);
-					xprintf("%p->step\n",ip->un.es);
-					list(ip->un.es->step,esp);
+					xprintf("%p->fromep\n",ip->un.es);
+					list(ip->un.es->fromep,esp);
+					xprintf("%p->toep\n",ip->un.es);
+					list(ip->un.es->toep,esp);
+					xprintf("%p->stepep\n",ip->un.es);
+					list(ip->un.es->stepep,esp);
 					xprintf("%p->ep\n",ip->un.es);
 					list(ip->un.es->ep,esp);
 					level_dec();
@@ -178,12 +179,12 @@ vmd:
 					if(addr2sym(ep,esp,ssym,ip->un.ev->func)<0)
 						sprintf(ssym,"%p",ip->un.ev->func);
 					xprintf("struct expr_vmdinfo %p index:%p func:%s\n",ip->un.ev,&ip->un.ev->index,ssym);
-					xprintf("%p->from\n",ip->un.ev);
-					list(ip->un.ev->from,esp);
-					xprintf("%p->to\n",ip->un.ev);
-					list(ip->un.ev->to,esp);
-					xprintf("%p->step\n",ip->un.ev);
-					list(ip->un.ev->step,esp);
+					xprintf("%p->fromep\n",ip->un.ev);
+					list(ip->un.ev->fromep,esp);
+					xprintf("%p->toep\n",ip->un.ev);
+					list(ip->un.ev->toep,esp);
+					xprintf("%p->stepep\n",ip->un.ev);
+					list(ip->un.ev->stepep,esp);
 					xprintf("%p->ep\n",ip->un.ev);
 					list(ip->un.ev->ep,esp);
 					level_dec();

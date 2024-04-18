@@ -101,6 +101,9 @@ double dwrite(size_t n,double *args){
 	a2s(buf,args,size);
 	return (double)write(fd,buf,size);
 }
+double dsizeof(size_t n,double *args){
+	return (double)(n*sizeof(double));
+}
 double dopen(size_t n,double *args){
 	char *buf;
 	int flag;
@@ -246,6 +249,7 @@ void add_common_symbols(struct expr_symset *es){
 	setmd(inet_addr,0);
 	setmd(kill,2);
 	setmd(printa,0);
+	setmd(sizeof,0)->flag|=EXPR_SF_INJECTION;
 	setmd(sorta,0);
 	setmd(sorta_old,0);
 	setmd(socket,3);
