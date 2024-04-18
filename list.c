@@ -29,6 +29,7 @@ int main(int c,char **argv){
 				printf("value: %g",*(double *)p->un.addr);
 				break;
 			case EXPR_FUNCTION:
+				if(p->flag&EXPR_SF_INJECTION)
 				printf("f(1.0):%.4g    f(e):%.4g",p->un.func(1),p->un.func(M_E));
 				break;
 			case EXPR_MDFUNCTION:
@@ -41,6 +42,8 @@ int main(int c,char **argv){
 			case EXPR_ZAFUNCTION:
 				printf("f():%.4g",p->un.zafunc());
 				break;
+			default:
+				abort();
 
 		}
 		printf("\n");
