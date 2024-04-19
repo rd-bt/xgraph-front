@@ -90,6 +90,18 @@ double dkill(size_t n,double *args){
 #define a2s(buf,args,size) buf=alloca(size+1);\
 	for(size_t i=0;i<size;++i)\
 		buf[i]=(char)*(args++)
+double dwrite3(size_t n,double *args){
+	size_t size;
+	union {
+		void *buf;
+		double dr;
+	} un;
+	int fd;
+	fd=(int)*args;
+	un.dr=*(++args);
+	size=(size_t)*(++args);
+	return write(fd,un.buf,size);
+}
 double dwrite(size_t n,double *args){
 	char *buf;
 	size_t size;
@@ -255,6 +267,7 @@ void add_common_symbols(struct expr_symset *es){
 	setmd(socket,3);
 	setmd(tgkill,3);
 	setmd(write,0);
+	setmd(write3,3);
 	setmd(open,0);
 #define setconst(c) expr_symset_add(es,#c,EXPR_CONSTANT,(double)(c))
 	setconst(AF_UNIX);
