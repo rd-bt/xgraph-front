@@ -79,9 +79,6 @@ double dhtonl(double x){
 double dclose(double x){
 	return (double)close((int)(x));
 }
-double dexit(double x){
-	exit((int)(x));
-}
 
 double dkill(size_t n,double *args){
 	if(n!=2)abort();
@@ -101,6 +98,18 @@ double dwrite3(size_t n,double *args){
 	un.dr=*(++args);
 	size=(size_t)*(++args);
 	return write(fd,un.buf,size);
+}
+double dread3(size_t n,double *args){
+	size_t size;
+	union {
+		void *buf;
+		double dr;
+	} un;
+	int fd;
+	fd=(int)*args;
+	un.dr=*(++args);
+	size=(size_t)*(++args);
+	return read(fd,un.buf,size);
 }
 double dwrite(size_t n,double *args){
 	char *buf;
@@ -208,6 +217,14 @@ double disprime(double x){
 double dprint(double x){
 	return (double)fprintd(STDOUT_FILENO,x);
 }
+double dputs(double x){
+	/*union {
+		double d;
+		char *r;
+	} un;
+	un.d=x;*/
+	return (double)puts(expr_cast(x,char *));
+}
 double dfprint(size_t n,double *args){
 	return (double)fprintd((int)args[0],args[1]);
 }
@@ -239,11 +256,10 @@ void add_common_symbols(struct expr_symset *es){
 		expr_symset_add(es,buf,EXPR_VARIABLE,vx+i);
 	}
 	//puts("vx ok");
-	expr_symset_add(es,"abort",EXPR_ZAFUNCTION,abort);
 	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime);
+#define setfunc0(c) expr_symset_add(es,#c,EXPR_FUNCTION,c)
 #define setfunc(c) expr_symset_add(es,#c,EXPR_FUNCTION,d##c)
 	setfunc(close);
-	setfunc(exit);
 	setfunc(htonl);
 	setfunc(htons);
 	setfunc(isprime)->flag|=EXPR_SF_INJECTION;
@@ -251,6 +267,7 @@ void add_common_symbols(struct expr_symset *es){
 	setfunc(prime_mt)->flag|=EXPR_SF_INJECTION;
 	setfunc(prime_old)->flag|=EXPR_SF_INJECTION;
 	setfunc(print);
+	setfunc(puts);
 	setfunc(raise);
 	setfunc(sleep);
 #define setmd(c,dim) expr_symset_add(es,#c,EXPR_MDFUNCTION,d##c,(size_t)dim)
@@ -262,6 +279,7 @@ void add_common_symbols(struct expr_symset *es){
 	setmd(kill,2);
 	setmd(printa,0);
 	setmd(sizeof,0)->flag|=EXPR_SF_INJECTION;
+	setmd(read3,3);
 	setmd(sorta,0);
 	setmd(sorta_old,0);
 	setmd(socket,3);

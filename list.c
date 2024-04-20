@@ -40,7 +40,7 @@ int main(int c,char **argv){
 				printf("dimension: no limit");
 				break;
 			case EXPR_ZAFUNCTION:
-				printf("f():%.4g",p->un.zafunc());
+				//printf("f():%.4g",p->un.zafunc());
 				break;
 			default:
 				abort();
