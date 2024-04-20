@@ -65,6 +65,10 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 				sop="const";
 				sprintf(ssrc,"%g",ip->un.value);
 				break;
+			case EXPR_ALO:
+				sop="alo";
+				sprintf(ssrc,"%zd",ip->un.zd);
+				break;
 			case EXPR_INPUT:
 					sop="input";
 					strcpy(ssrc," ");
@@ -170,7 +174,9 @@ branch:
 					break;
 md:
 					level_inc();
-					xprintf("struct expr_mdinfo %p dim=%zu\n",ip->un.em,ip->un.em->dim);
+					if(addr2sym(ep,esp,ssym,ip->un.em->un.func)<0)
+						sprintf(ssym,"%p",ip->un.em->un.func);
+					xprintf("struct expr_mdinfo %p dim=%zu func:%s\n",ip->un.em,ip->un.em->dim,ssym);
 					for(size_t i=0;i<ip->un.em->dim;++i){
 					xprintf("dimension %zu\n",i);
 					list(ip->un.em->eps+i,esp);
