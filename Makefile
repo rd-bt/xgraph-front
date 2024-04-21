@@ -6,6 +6,8 @@ draw: main.c xgraph/lib/xgraph.a xgraph/header/xdraw.h xgraph common_symbols.c
 	$(CC) $(CFLAG) main.c common_symbols.c -o draw $(LFLAG)
 calc: calc.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
 	$(CC) $(CFLAG) calc.c common_symbols.c -o calc $(LFLAG)
+leak: calc.c xgraph/expr.c xgraph/header/expr.h xgraph common_symbols.c
+	$(CC) $(CFLAG) -DMEMORY_LEAK_CHECK calc.c common_symbols.c -o calc xgraph/expr.c -lm
 list: list.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c
 	$(CC) $(CFLAG) list.c common_symbols.c -o list $(LFLAG)
 dump: dump.c xgraph/lib/xgraph.a xgraph/header/expr.h xgraph common_symbols.c

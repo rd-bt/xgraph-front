@@ -4,6 +4,7 @@
 #include "xgraph/header/expr.h"
 #include <time.h>
 #include <math.h>
+#define psize(s) printf("sizeof(" #s ")=%zu\n",sizeof(s))
 const char *t2s[]={
 	[EXPR_CONSTANT]="Constant",
 	[EXPR_VARIABLE]="Variable",
@@ -15,11 +16,30 @@ const char *t2s[]={
 };
 int main(int c,char **argv){
 	srand48(time(NULL)+getpid());
-	for(const struct expr_builtin_keyword *p=expr_keywords;p->str;++p){
+	psize(struct expr);
+	psize(struct expr_inst);
+	psize(struct expr_suminfo);
+	psize(struct expr_mdinfo);
+	psize(struct expr_vmdinfo);
+	psize(struct expr_branchinfo);
+	psize(struct expr_symset);
+	psize(struct expr_symbol);
+	psize(struct expr_builtin_symbol);
+	psize(struct expr_builtin_keyword);
+	psize(struct expr_resource);
+	for(const struct expr_builtin_keyword *p=expr_keywords;;++p){
+		if(!p->str){
+			printf("%zu keywords\n",p-expr_keywords);
+			break;
+		}
 		printf("%-12s\tKeyword \t%s(%s)\n",p->str,p->str,p->desc);
 	}
 	printf("\n");
-	for(const struct expr_builtin_symbol *p=expr_bsyms;p->str;++p){
+	for(const struct expr_builtin_symbol *p=expr_symbols;;++p){
+		if(!p->str){
+			printf("%zu symbols\n",p-expr_symbols);
+			break;
+		}
 		printf("%-12s\t%-30s",p->str,t2s[p->type]);
 		switch(p->type){
 			case EXPR_CONSTANT:

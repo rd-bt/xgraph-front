@@ -43,7 +43,7 @@ int addr2sym(const struct expr *restrict ep,const struct expr_symset *restrict e
 		strcpy(buf,sym.es->str);
 		return 0;
 	}
-	sym.ebs=expr_bsym_rsearch(addr);
+	sym.ebs=expr_builtin_symbol_rsearch(addr);
 	if(sym.ebs){
 		strcpy(buf,sym.ebs->str);
 		return 0;
@@ -122,6 +122,7 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_FOR:sop="for";goto sum;
 			case EXPR_MD:sop="md";goto md;
 			case EXPR_ME:sop="me";goto md;
+			case EXPR_MEP:sop="mep";goto md;
 			case EXPR_VMD:sop="vmd";goto vmd;
 			case EXPR_HOT:
 					sop="hot";
