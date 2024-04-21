@@ -28,7 +28,25 @@ print the first 100000 primes
 ```
 send signal 15 to process with pid from 1 to 10000 and output the number of successes
 ```
-./calc 'socket(AF_INET,SOCK_STREAM,IPPROTO_TCP)-->fd;byte(16)-->p;bzero(p,16);w16(p,AF_INET);w16(p#2,htons(12345));bind(fd,p,16);listen(fd,1);0-->rfd;while(accept(fd,0,0)->rfd,byte(128*1024*1024)-->b;0-->sz;while(read3(rfd,b,128*1024*1024)->sz>0,write3(rfd,b,sz),close(rfd)),close(fd))'
+./calc "\
+socket(AF_INET,SOCK_STREAM,IPPROTO_TCP)-->fd;\
+byte(16)-->p;\
+bzero(p,16);\
+w16(p,AF_INET);\
+w16(p#2,htons(12345));\
+bind(fd,p,16);\
+listen(fd,1);\
+0-->rfd;\
+while(accept(fd,0,0)->rfd>=0){\
+	byte(128*1024*1024)-->b;\
+	0-->sz;\
+	while(read3(rfd,b,128*1024*1024)->sz>0){\
+		write3(rfd,b,sz);\
+	};\
+	close(rfd);\
+};\
+close(fd);\
+"
 ```
 a simple echo server with port 12345
 
