@@ -15,6 +15,54 @@
 #include <limits.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#define casting(x,T) ((T)(x))
+#define cast(x,T) expr_cast(x,T)
+/*_Generic(T,\
+		void *:expr_cast(x,T),\
+		double:(x),\
+		default:(T)(x)\
+		)
+		,void *:expr_cast(x,double)\*/
+#define castingd(x) ((double)(x))
+//_Generic((x),void *:(expr_cast(x,double)),default:((double)(x)))
+#define warp1(rtype,sym,atype) double d##sym(double x){\
+	rtype r=(rtype)sym(casting(x,atype));\
+	return castingd(r);\
+}
+#define warp2(rtype,sym,at0,at1) double d##sym(size_t n,double *v){\
+	rtype r=(rtype)sym(casting(v[0],at0),casting(v[1],at1));\
+	return castingd(r);\
+}
+#define warppip(rtype,sym,at0,at1) double d##sym(size_t n,double *v){\
+	rtype r=(rtype)sym(casting(v[0],at0),cast(v[1],at1));\
+	return expr_cast(r,double);\
+}
+#define warp3(rtype,sym,at0,at1,at2) double d##sym(size_t n,double *v){\
+	rtype r=(rtype)sym(casting(v[0],at0),casting(v[1],at1),casting(v[2],at2));\
+	return castingd(r);\
+}
+#define warpiipi(rtype,sym,at0,at1,at2) double d##sym(size_t n,double *v){\
+	rtype r=(rtype)sym(casting(v[0],at0),cast(v[1],at1),casting(v[2],at2));\
+	return castingd(r);\
+}
+#define warpiipp(rtype,sym,at0,at1,at2) double d##sym(size_t n,double *v){\
+	rtype r=(rtype)sym(casting(v[0],at0),cast(v[1],at1),cast(v[2],at2));\
+	return castingd(r);\
+}
+#define warpz(rtype,sym) double d##sym(void){\
+	rtype r=(rtype)sym();\
+	return castingd(r);\
+}
+warp1(int,close,int)
+warp1(int,raise,int)
+warp2(int,kill,pid_t,int)
+warp2(int,listen,int,int)
+warppip(void *,signal,int,void *)
+warp3(int,socket,int,int,int)
+int tgkill(int,int,int);
+warp3(int,tgkill,int,int,int)
+warpiipi(int,bind,int,struct sockaddr *,socklen_t)
+warpiipp(int,accept,int,struct sockaddr *,socklen_t *)
 int vfdprintf_atomic(int fd,const char *restrict format,va_list ap){
 	int r;
 	char buf[PIPE_BUF];
@@ -66,24 +114,13 @@ double dsleep(double x){
 	nanosleep(&ts,&rts);
 	return (double)rts.tv_sec+rts.tv_nsec/1000000000.0;
 }
-
-double draise(double x){
-	return (double)raise((int)(x));
-}
 double dhtons(double x){
 	return (double)htons((short)(x));
 }
 double dhtonl(double x){
 	return (double)htonl((int)(x));
 }
-double dclose(double x){
-	return (double)close((int)(x));
-}
 
-double dkill(size_t n,double *args){
-	if(n!=2)abort();
-	return (double)kill((pid_t)(args[0]),(int)(args[1]));
-}
 #define a2s(buf,args,size) buf=alloca(size+1);\
 	for(size_t i=0;i<size;++i)\
 		buf[i]=(char)*(args++)
@@ -177,13 +214,6 @@ double dinet_addr(size_t n,double *args){
 			return -1.0;
 	}
 }
-double dtgkill(size_t n,double *args){
-	int tgkill(int,int,int);
-	return (double)tgkill((int)(args[0]),(int)(args[1]),(int)(args[2]));
-}
-double dsocket(size_t n,double *args){
-	return (double)socket((int)(args[0]),(int)(args[1]),(int)(args[2]));
-}
 int isprime(unsigned long n){
 	if(n==2)return 1;
 	if(!(n&1))return 0;
@@ -217,6 +247,7 @@ double disprime(double x){
 double dprint(double x){
 	return (double)fprintd(STDOUT_FILENO,x);
 }
+
 double dputs(double x){
 	/*union {
 		double d;
@@ -260,8 +291,8 @@ void add_common_symbols(struct expr_symset *es){
 #define setfunc0(c) expr_symset_add(es,#c,EXPR_FUNCTION,c)
 #define setfunc(c) expr_symset_add(es,#c,EXPR_FUNCTION,d##c)
 	setfunc(close);
-	setfunc(htonl);
-	setfunc(htons);
+	setfunc(htonl)->flag|=EXPR_SF_INJECTION;
+	setfunc(htons)->flag|=EXPR_SF_INJECTION;
 	setfunc(isprime)->flag|=EXPR_SF_INJECTION;
 	setfunc(prime)->flag|=EXPR_SF_INJECTION;
 	setfunc(prime_mt)->flag|=EXPR_SF_INJECTION;
@@ -271,15 +302,19 @@ void add_common_symbols(struct expr_symset *es){
 	setfunc(raise);
 	setfunc(sleep);
 #define setmd(c,dim) expr_symset_add(es,#c,EXPR_MDFUNCTION,d##c,(size_t)dim)
+	setmd(accept,3);
+	setmd(bind,3);
 	setmd(connect,0);
 	setmd(fprint,2);
 	setmd(fprinta,0);
 	setmd(frya,0);
 	setmd(inet_addr,0);
 	setmd(kill,2);
+	setmd(listen,2);
 	setmd(printa,0);
 	setmd(sizeof,0)->flag|=EXPR_SF_INJECTION;
 	setmd(read3,3);
+	setmd(signal,2);
 	setmd(sorta,0);
 	setmd(sorta_old,0);
 	setmd(socket,3);
