@@ -90,6 +90,11 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_XOR:sop="xor";break;
 			case EXPR_SHL:sop="shl";break;
 			case EXPR_SHR:sop="shr";break;
+			case EXPR_LJ:sop="lj";break;
+			case EXPR_SJ:
+					sop="sj";
+					strcpy(ssrc," ");
+					break;
 			case EXPR_NEG:
 					sop="neg";
 					strcpy(ssrc," ");
@@ -124,8 +129,10 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_ME:sop="me";goto md;
 			case EXPR_MEP:sop="mep";goto md;
 			case EXPR_VMD:sop="vmd";goto vmd;
+			case EXPR_DO:sop="do";goto hot;
 			case EXPR_HOT:
 					sop="hot";
+hot:
 					level_inc();
 					xprintf("hot function %p\n",ip->un.hotfunc);
 					list(ip->un.hotfunc,esp);

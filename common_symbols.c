@@ -63,6 +63,10 @@ int tgkill(int,int,int);
 warp3(int,tgkill,int,int,int)
 warpiipi(int,bind,int,struct sockaddr *,socklen_t)
 warpiipp(int,accept,int,struct sockaddr *,socklen_t *)
+double last_sig;
+void dsetsig(int sig){
+ 	last_sig=(double)sig;
+}
 int vfdprintf_atomic(int fd,const char *restrict format,va_list ap){
 	int r;
 	char buf[PIPE_BUF];
@@ -287,6 +291,7 @@ void add_common_symbols(struct expr_symset *es){
 		expr_symset_add(es,buf,EXPR_VARIABLE,vx+i);
 	}
 	//puts("vx ok");
+	expr_symset_add(es,"sig",EXPR_VARIABLE,&last_sig);
 	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime);
 #define setfunc0(c) expr_symset_add(es,#c,EXPR_FUNCTION,c)
 #define setfunc(c) expr_symset_add(es,#c,EXPR_FUNCTION,d##c)
@@ -300,7 +305,8 @@ void add_common_symbols(struct expr_symset *es){
 	setfunc(print);
 	setfunc(puts);
 	setfunc(raise);
-	setfunc(sleep);
+	setfunc(setsig);	
+	setfunc(sleep);	
 #define setmd(c,dim) expr_symset_add(es,#c,EXPR_MDFUNCTION,d##c,(size_t)dim)
 	setmd(accept,3);
 	setmd(bind,3);
@@ -362,6 +368,9 @@ void add_common_symbols(struct expr_symset *es){
 	//setconst(O_TMPFILE);
 	setconst(O_TRUNC);
 	setconst(O_WRONLY);
+	expr_symset_add(es,"SIG_DFL",EXPR_CONSTANT,expr_cast(SIG_DFL,double));
+	expr_symset_add(es,"SIG_ERR",EXPR_CONSTANT,expr_cast(SIG_ERR,double));
+	expr_symset_add(es,"SIG_IGN",EXPR_CONSTANT,expr_cast(SIG_IGN,double));
 	setconst(EXIT_FAILURE);
 	setconst(EXIT_SUCCESS);
 	setconst(SIGHUP);
