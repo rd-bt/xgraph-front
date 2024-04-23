@@ -11,6 +11,7 @@
 void add_common_symbols(struct expr_symset *es);
 int main(int argc,char **argv){
 	char *buf,*p,*p1;
+	int flag=0;
 	struct expr ep[1];
 	long count=1,x=0;
 	double result;
@@ -40,10 +41,12 @@ int main(int argc,char **argv){
 		}else if(!strcmp(argv[i],"-x"))x=1;
 		else if(!strcmp(argv[i],"-n")&&i<argc-2){
 				count=atol(argv[++i]);
-		}
+		}else if(!strcmp(argv[i],"--no"))
+			flag|=EXPR_IF_NOOPTIMIZE;
 	}
 	add_common_symbols(es);
-	if(init_expr(ep,argv[argc-1],"t",es)<0){
+	if(init_expr5(ep,argv[argc-1],"t",es,flag)<0){
+		expr_symset_free(es);
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
 redo:

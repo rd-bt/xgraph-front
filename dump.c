@@ -73,14 +73,17 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 					sop="input";
 					strcpy(ssrc," ");
 					break;
-			case EXPR_CALL:sop="call";break;
+			case EXPR_BL:sop="bl";break;
+			case EXPR_BLP:sop="blp";break;
 			case EXPR_READ:sop="read";break;
 			case EXPR_WRITE:sop="write";break;
 			case EXPR_OFF:sop="off";break;
 			case EXPR_ZA:sop="za";break;
+			case EXPR_ZAP:sop="zap";break;
 			case EXPR_ADD:sop="add";break;
 			case EXPR_SUB:sop="sub";break;
 			case EXPR_NEXT:sop="next";break;
+			case EXPR_DIFF:sop="diff";break;
 			case EXPR_MUL:sop="mul";break;
 			case EXPR_DIV:sop="div";break;
 			case EXPR_MOD:sop="mod";break;
@@ -113,6 +116,7 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 					break;
 			case EXPR_IF:sop="if";goto branch;
 			case EXPR_WHILE:sop="while";goto branch;
+			case EXPR_DOW:sop="dow";goto branch;
 			case EXPR_SUM:sop="sum";goto sum;
 			case EXPR_INT:sop="int";goto sum;
 			case EXPR_PROD:sop="prod";goto sum;
@@ -130,6 +134,7 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_MEP:sop="mep";goto md;
 			case EXPR_VMD:sop="vmd";goto vmd;
 			case EXPR_DO:sop="do";goto hot;
+			case EXPR_EP:sop="ep";goto hot;
 			case EXPR_HOT:
 					sop="hot";
 hot:
@@ -221,13 +226,13 @@ vmd:
 			}
 		}
 		if(!*sdst){
-			index=varindex(ep,ip->dst);
-			if(index>=0)if(isnan(*ip->dst))
+			index=varindex(ep,ip->dst.dst);
+			if(index>=0)if(isnan(*ip->dst.dst))
 				sprintf(sdst,"vars[%zd]",index);
 			else
-				sprintf(sdst,"vars[%zd]=%g",index,*ip->dst);
-			else if(addr2sym(ep,esp,sdst,ip->dst)<0)
-				sprintf(sdst,"%p",ip->dst);
+				sprintf(sdst,"vars[%zd]=%g",index,*ip->dst.dst);
+			else if(addr2sym(ep,esp,sdst,ip->dst.dst)<0)
+				sprintf(sdst,"%p",ip->dst.dst);
 		}
 		xprintf("%-8s%s\t%s\n",sop,sdst,ssrc);
 	}
