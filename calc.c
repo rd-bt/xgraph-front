@@ -6,11 +6,14 @@
 #include "xgraph/header/expr.h"
 #include <time.h>
 #include <err.h>
+#include <errno.h>
+#include "readall.c"
 //#define fprintf(...) 1
 //#define puts(...) 1
 void add_common_symbols(struct expr_symset *es);
 int main(int argc,char **argv){
 	char *buf,*p,*p1;
+	char *e;
 	int flag=0;
 	struct expr ep[1];
 	long count=1,x=0;
@@ -45,8 +48,16 @@ int main(int argc,char **argv){
 			flag|=EXPR_IF_NOOPTIMIZE;
 	}
 	add_common_symbols(es);
-	if(init_expr5(ep,argv[argc-1],"t",es,flag)<0){
+	if(!strcmp(e=argv[argc-1],"-")){
+		ssize_t r=readall(STDIN_FILENO,(void **)&e);
+		if(r<0){
+			expr_symset_free(es);
+			errx(EXIT_FAILURE,"cannot read stdin:%s",strerror(-r));
+		}
+	}
+	if(init_expr5(ep,e,"t",es,flag)<0){
 		expr_symset_free(es);
+		if(e!=argv[argc-1])free(e);
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
 redo:
@@ -65,5 +76,6 @@ redo:
 	free(buf);
 	expr_free(ep);
 	expr_symset_free(es);
+	if(e!=argv[argc-1])free(e);
 	return 0;
 }
