@@ -74,13 +74,13 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 					strcpy(ssrc," ");
 					break;
 			case EXPR_BL:sop="bl";break;
-			case EXPR_BLP:sop="blp";break;
+			case EXPR_PBL:sop="pbl";break;
 			case EXPR_READ:sop="read";break;
 			case EXPR_WRITE:sop="write";break;
 			case EXPR_OFF:sop="off";break;
 			case EXPR_ZA:sop="za";break;
 			case EXPR_EVAL:sop="eval";break;
-			case EXPR_ZAP:sop="zap";break;
+			case EXPR_PZA:sop="pza";break;
 			case EXPR_ADD:sop="add";break;
 			case EXPR_SUB:sop="sub";break;
 			case EXPR_NEXT:sop="next";break;
@@ -132,6 +132,9 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_FOR:sop="for";goto sum;
 			case EXPR_MD:sop="md";goto md;
 			case EXPR_ME:sop="me";goto md;
+			case EXPR_PMD:sop="pmd";goto md;
+			case EXPR_PME:sop="pme";goto md;
+			case EXPR_PMEP:sop="pmep";goto md;
 			case EXPR_MEP:sop="mep";goto md;
 			case EXPR_VMD:sop="vmd";goto vmd;
 			case EXPR_DO:sop="do";goto hot;

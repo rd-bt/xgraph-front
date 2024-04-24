@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <limits.h>
 #include <pthread.h>
+#include <errno.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/wait.h>
@@ -35,6 +36,10 @@
 #define warpip(rtype,sym,atype) static double d_##sym(double x){\
 	rtype r=(rtype)sym(cast(x,atype));\
 	return castingd(r);\
+}
+#define warppi(rtype,sym,atype) static double d_##sym(double x){\
+	rtype r=(rtype)sym(casting(x,atype));\
+	return cast(r,double);\
 }
 #define warp2(rtype,sym,at0,at1) static double d_##sym(size_t n,double *v){\
 	rtype r=(rtype)sym(casting(v[0],at0),casting(v[1],at1));\
@@ -83,6 +88,7 @@ warp1(int,seteuid,uid_t)
 warp1(int,setegid,gid_t)
 warp1(int,close,int)
 warp1(int,raise,int)
+warppi(void *,strerror,int)
 warpip(size_t,strlen,void *)
 warpppi(void *,strchr,void *,int)
 warpip(pid_t,wait,void *)
@@ -372,6 +378,7 @@ void add_common_symbols(struct expr_symset *es){
 	setfunc(setgid);
 	setfunc(setegid);
 	setfunc(sleep);
+	setfunc(strerror);
 	setfunc(strlen);
 	setfunc(wait);
 #define setmd(c,dim) expr_symset_add(es,#c,EXPR_MDFUNCTION,d_##c,(size_t)dim)
