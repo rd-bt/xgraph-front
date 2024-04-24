@@ -79,6 +79,7 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 			case EXPR_WRITE:sop="write";break;
 			case EXPR_OFF:sop="off";break;
 			case EXPR_ZA:sop="za";break;
+			case EXPR_EVAL:sop="eval";break;
 			case EXPR_ZAP:sop="zap";break;
 			case EXPR_ADD:sop="add";break;
 			case EXPR_SUB:sop="sub";break;

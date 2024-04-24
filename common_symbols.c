@@ -28,39 +28,43 @@
 		,void *:expr_cast(x,double)\*/
 #define castingd(x) ((double)(x))
 //_Generic((x),void *:(expr_cast(x,double)),default:((double)(x)))
-#define warp1(rtype,sym,atype) double d_##sym(double x){\
+#define warp1(rtype,sym,atype) static double d_##sym(double x){\
 	rtype r=(rtype)sym(casting(x,atype));\
 	return castingd(r);\
 }
-#define warpip(rtype,sym,atype) double d_##sym(double x){\
+#define warpip(rtype,sym,atype) static double d_##sym(double x){\
 	rtype r=(rtype)sym(cast(x,atype));\
 	return castingd(r);\
 }
-#define warp2(rtype,sym,at0,at1) double d_##sym(size_t n,double *v){\
+#define warp2(rtype,sym,at0,at1) static double d_##sym(size_t n,double *v){\
 	rtype r=(rtype)sym(casting(v[0],at0),casting(v[1],at1));\
 	return castingd(r);\
 }
-#define warppip(rtype,sym,at0,at1) double d_##sym(size_t n,double *v){\
+#define warppip(rtype,sym,at0,at1) static double d_##sym(size_t n,double *v){\
 	rtype r=(rtype)sym(casting(v[0],at0),cast(v[1],at1));\
 	return expr_cast(r,double);\
 }
-#define warp3(rtype,sym,at0,at1,at2) double d_##sym(size_t n,double *v){\
+#define warpppi(rtype,sym,at0,at1) static double d_##sym(size_t n,double *v){\
+	rtype r=(rtype)sym(cast(v[0],at0),casting(v[1],at1));\
+	return expr_cast(r,double);\
+}
+#define warp3(rtype,sym,at0,at1,at2) static double d_##sym(size_t n,double *v){\
 	rtype r=(rtype)sym(casting(v[0],at0),casting(v[1],at1),casting(v[2],at2));\
 	return castingd(r);\
 }
-#define warpiipi(rtype,sym,at0,at1,at2) double d_##sym(size_t n,double *v){\
+#define warpiipi(rtype,sym,at0,at1,at2) static double d_##sym(size_t n,double *v){\
 	rtype r=(rtype)sym(casting(v[0],at0),cast(v[1],at1),casting(v[2],at2));\
 	return castingd(r);\
 }
-#define warpiipp(rtype,sym,at0,at1,at2) double d_##sym(size_t n,double *v){\
+#define warpiipp(rtype,sym,at0,at1,at2) static double d_##sym(size_t n,double *v){\
 	rtype r=(rtype)sym(casting(v[0],at0),cast(v[1],at1),cast(v[2],at2));\
 	return castingd(r);\
 }
-#define warpipii(rtype,sym,at0,at1,at2) double d_##sym(size_t n,double *v){\
+#define warpipii(rtype,sym,at0,at1,at2) static double d_##sym(size_t n,double *v){\
 	rtype r=(rtype)sym(cast(v[0],at0),n>1?casting(v[1],at1):0,n>2?casting(v[2],at2):0);\
 	return castingd(r);\
 }
-#define warpz(rtype,sym) double d_##sym(void){\
+#define warpz(rtype,sym) static double d_##sym(void){\
 	rtype r=(rtype)sym();\
 	return castingd(r);\
 }
@@ -79,6 +83,8 @@ warp1(int,seteuid,uid_t)
 warp1(int,setegid,gid_t)
 warp1(int,close,int)
 warp1(int,raise,int)
+warpip(size_t,strlen,void *)
+warpppi(void *,strchr,void *,int)
 warpip(pid_t,wait,void *)
 warpip(in_addr_t,inet_addr,void *)
 warp2(int,kill,pid_t,int)
@@ -366,6 +372,7 @@ void add_common_symbols(struct expr_symset *es){
 	setfunc(setgid);
 	setfunc(setegid);
 	setfunc(sleep);
+	setfunc(strlen);
 	setfunc(wait);
 #define setmd(c,dim) expr_symset_add(es,#c,EXPR_MDFUNCTION,d_##c,(size_t)dim)
 	setmd(accept,3);
@@ -386,6 +393,7 @@ void add_common_symbols(struct expr_symset *es){
 	setmd(sorta,0);
 	setmd(sorta_old,0);
 	setmd(socket,3);
+	setmd(strchr,2);
 	setmd(tgkill,3);
 	setmd(write,0);
 	setmd(write3,3);
