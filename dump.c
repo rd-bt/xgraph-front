@@ -37,6 +37,7 @@ int addr2sym(const struct expr *restrict ep,const struct expr_symset *restrict e
 		const struct expr_symbol *es;
 		const struct expr_builtin_symbol *ebs;
 	} sym;
+	if(!addr)return -1;
 	sym.es=NULL;
 	if(ep->sset)sym.es=expr_symset_rsearch(esp,addr);
 	if(sym.es){
