@@ -10,7 +10,7 @@ while(accept(fd,0,0)->rfd>=0){
 	byte(128*1024*1024)-->b;
 	0-->sz;
 	while(read3(rfd,b,128*1024*1024)->sz>0){
-		write3(rfd,b,sz)
+		write3(rfd,b,sz);
 	};
 	close(rfd);
 };
