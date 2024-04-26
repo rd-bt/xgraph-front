@@ -98,7 +98,8 @@
 		case EXPR_WHILE
 #define HOTCASES EXPR_DO:\
 		case EXPR_HOT:\
-		case EXPR_EP
+		case EXPR_EP:\
+		case EXPR_WIF
 #define expr_equal(_a,_b) ({\
 	double a,b,absa,absb,absamb;\
 	int _r;\
@@ -2140,7 +2141,10 @@ static struct expr_mdinfo *expr_getmdinfo(struct expr *restrict ep,const char *e
 		i=1;
 	}else {
 		v=expr_sep(ep,e,esz);
-		if(!v)return NULL;
+		if(!v){
+			memcpy(ep->errinfo,e0,sz);
+			return NULL;
+		}
 		p=v;
 		while(*p)++p;
 		i=p-v;
@@ -2238,6 +2242,7 @@ static struct expr_vmdinfo *expr_getvmdinfo(struct expr *restrict ep,const char 
 	ssize_t max;
 	double (*fp)(size_t n,double *args);
 	if(!v){
+		memcpy(ep->errinfo,e0,sz);
 		return NULL;
 	}
 	p=v;
@@ -2327,6 +2332,7 @@ static struct expr_suminfo *expr_getsuminfo(struct expr *restrict ep,const char 
 	struct expr_suminfo *es;
 	struct expr_symset *sset;
 	if(!v){
+		memcpy(ep->errinfo,e0,sz);
 		return NULL;
 	}
 	p=v;
@@ -2389,8 +2395,16 @@ static struct expr_branchinfo *expr_getbranchinfo(struct expr *restrict ep,const
 	//	while(cond,body,value)
 		eb->cond=new_expr8(b->cond,b->scond,asym,asymlen,ep->sset,ep->iflag,&ep->error,ep->errinfo);
 		if(!eb->cond)goto err1;
-		eb->body=new_expr8(b->body,b->sbody,asym,asymlen,ep->sset,ep->iflag,&ep->error,ep->errinfo);
-		if(!eb->body)goto err2;
+		if(b->sbody){
+			eb->body=new_expr8(b->body,b->sbody,asym,asymlen,ep->sset,ep->iflag,&ep->error,ep->errinfo);
+			if(!eb->body)goto err2;
+		}else {
+			eb->body=new_expr_const(NAN);
+			if(!eb->body){
+				ep->error=EXPR_EMEM;
+				goto err2;
+			}
+		}
 		if(b->svalue){
 			eb->value=new_expr8(b->value,b->svalue,asym,asymlen,ep->sset,ep->iflag,&ep->error,ep->errinfo);
 			if(!eb->value)goto err3;
@@ -2405,6 +2419,7 @@ static struct expr_branchinfo *expr_getbranchinfo(struct expr *restrict ep,const
 	}
 	v=expr_sep(ep,e,esz);
 	if(!v){
+		memcpy(ep->errinfo,e0,sz);
 		return NULL;
 	}
 	p=v;
@@ -2934,8 +2949,10 @@ vzero:
 						--p;
 						sym.b->svalue=0;
 					}
-					if(!sym.b->scond||!sym.b->sbody)
+					if(!sym.b->scond){
+						memcpy(ep->errinfo,kp->str,minc(kp->strlen,EXPR_SYMLEN));
 						goto envp;
+					}
 					un.eb=expr_getbranchinfo(ep,NULL,0,NULL,0,sym.b,asym,asymlen);
 				}else
 				un.eb=expr_getbranchinfo(ep,p2,e-p2,e,p-e+1,NULL,asym,asymlen);
@@ -4525,6 +4542,7 @@ static int expr_constexpr(const struct expr *restrict ep,double *except){
 			case BRANCHCASES:
 			case EXPR_DO:
 			case EXPR_EP:
+			case EXPR_WIF:
 			case EXPR_EVAL:
 			case EXPR_READ:
 			case EXPR_WRITE:
@@ -4704,8 +4722,21 @@ static int expr_optimize_constexpr(struct expr *restrict ep){
 				r=1;
 				break;
 			case EXPR_WHILE:
-				if(!expr_constexpr(ip->un.eb->cond,NULL))
+				if(!expr_constexpr(ip->un.eb->cond,NULL)){
+					if(expr_constexpr(ip->un.eb->body,NULL)){
+wif:
+						hep=ip->un.eb->cond;
+						expr_free(ip->un.eb->body);
+						expr_free(ip->un.eb->value);
+						xfree(ip->un.eb);
+						ip->op=EXPR_WIF;
+						ip->un.hotfunc=hep;
+						ip->flag=0;
+						r=1;
+						break;
+					}
 					continue;
+				}
 				if(expr_eval(ip->un.eb->cond,input)!=0.0){
 endless:
 					hep=ip->un.eb->body;
@@ -4736,7 +4767,10 @@ endless:
 				}
 				break;
 			case EXPR_DOW:
-				if(!expr_constexpr(ip->un.eb->cond,NULL))
+				if(!expr_constexpr(ip->un.eb->cond,NULL)){
+					if(expr_constexpr(ip->un.eb->body,NULL))
+						goto wif;
+				}
 					continue;
 				if(expr_eval(ip->un.eb->cond,input)!=0.0)
 					goto endless;
@@ -4761,6 +4795,7 @@ free_eb:
 				r=1;
 			case EXPR_HOT:
 			case EXPR_EP:
+			case EXPR_WIF:
 				if(!expr_constexpr(ip->un.hotfunc,NULL))
 					continue;
 				result=expr_eval(ip->un.hotfunc,input);
@@ -5438,6 +5473,9 @@ double expr_eval(const struct expr *restrict ep,double input){
 			case EXPR_WHILE:
 				while(expr_eval(ip->un.eb->cond,input)!=0.0)
 					expr_eval(ip->un.eb->body,input);
+				break;
+			case EXPR_WIF:
+				while(expr_eval(ip->un.hotfunc,input)!=0.0);
 				break;
 			case EXPR_DOW:
 				do
