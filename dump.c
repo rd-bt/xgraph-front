@@ -118,6 +118,7 @@ void list(const struct expr *restrict ep,const struct expr_symset *restrict esp)
 					break;
 			case EXPR_IF:sop="if";goto branch;
 			case EXPR_WHILE:sop="while";goto branch;
+			case EXPR_DON:sop="don";goto branch;
 			case EXPR_DOW:sop="dow";goto branch;
 			case EXPR_SUM:sop="sum";goto sum;
 			case EXPR_INT:sop="int";goto sum;
