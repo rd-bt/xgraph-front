@@ -88,6 +88,8 @@ warp1(int,seteuid,uid_t)
 warp1(int,setegid,gid_t)
 warp1(int,close,int)
 warp1(int,raise,int)
+warp1(uint32_t,htonl,uint32_t)
+warp1(uint16_t,htons,uint16_t)
 warppi(void *,strerror,int)
 warpip(size_t,strlen,void *)
 warpppi(void *,strchr,void *,int)
@@ -104,8 +106,17 @@ warpiipi(int,bind,int,struct sockaddr *,socklen_t)
 warpiipi(int,connect,int,struct sockaddr *,socklen_t)
 warpiipp(int,accept,int,struct sockaddr *,socklen_t *)
 double last_sig;
+struct expr *volatile sigep[SIGEV_MAX_SIZE+1];
 void d_setsig(int sig){
  	last_sig=(double)sig;
+}
+void d_sigep(int sig){
+	expr_eval(sigep[sig],(double)sig);
+}
+double d_signalep(size_t n,double *v){
+	int s=(int)v[0];
+	sigep[s]=cast(v[1],struct expr *);
+	return cast(signal(s,d_sigep),double);
 }
 int vfdprintf_atomic(int fd,const char *restrict format,va_list ap){
 	int r;
@@ -158,17 +169,11 @@ double d_sleep(double x){
 	nanosleep(&ts,&rts);
 	return (double)rts.tv_sec+rts.tv_nsec/1000000000.0;
 }
-double d_htons(double x){
-	return (double)htons((short)(x));
-}
-double d_htonl(double x){
-	return (double)htonl((int)(x));
-}
 
 #define a2s(buf,args,size) buf=alloca(size+1);\
 	for(size_t i=0;i<size;++i)\
 		buf[i]=(char)*(args++)
-double d_write3(size_t n,double *args){
+double d_write(size_t n,double *args){
 	size_t size;
 	union {
 		void *buf;
@@ -180,7 +185,7 @@ double d_write3(size_t n,double *args){
 	size=(size_t)*(++args);
 	return write(fd,un.buf,size);
 }
-double d_read3(size_t n,double *args){
+double d_read(size_t n,double *args){
 	size_t size;
 	union {
 		void *buf;
@@ -237,21 +242,6 @@ err:
 	return -1.0;
 }
 #pragma GCC diagnostic pop
-double d_write(size_t n,double *args){
-	char *buf;
-	size_t size;
-	int fd;
-	if(n<2)return -1.0;
-	size=n-1;
-	fd=(int)*args;
-	++args;
-	a2s(buf,args,size);
-	return (double)write(fd,buf,size);
-}
-double d_sizeof(size_t n,double *args){
-	return (double)(n*sizeof(double));
-}
-
 /*double d_inet_addr(size_t n,double *args){
 	switch(n){
 		case 1:
@@ -348,8 +338,10 @@ void add_common_symbols(struct expr_symset *es){
 		expr_symset_add(es,buf,EXPR_VARIABLE,vx+i);
 	}
 	//puts("vx ok");
-#define setza(c) expr_symset_add(es,#c,EXPR_ZAFUNCTION,d_##c)
+	expr_symset_add(es,"errno",EXPR_VARIABLE,&errno);
 	expr_symset_add(es,"sig",EXPR_VARIABLE,&last_sig);
+	expr_symset_add(es,"sigep",EXPR_VARIABLE,&sigep);
+#define setza(c) expr_symset_add(es,#c,EXPR_ZAFUNCTION,d_##c)
 	expr_symset_add(es,"time",EXPR_ZAFUNCTION,dtime);
 	setza(getpid);
 	setza(getppid);
@@ -370,6 +362,7 @@ void add_common_symbols(struct expr_symset *es){
 	setfunc(prime_mt)->flag|=EXPR_SF_INJECTION;
 	setfunc(prime_old)->flag|=EXPR_SF_INJECTION;
 	setfunc(print);
+	setfunc(sigep);
 	setfunc(puts);
 	setfunc(raise);
 	setfunc(setsig);
@@ -394,16 +387,15 @@ void add_common_symbols(struct expr_symset *es){
 	setmd(printa,0);
 	setmd(printf,0);
 	setmd(printk,0);
-	setmd(sizeof,0)->flag|=EXPR_SF_INJECTION;
-	setmd(read3,3);
+	setmd(read,3);
 	setmd(signal,2);
+	setmd(signalep,2);
 	setmd(sorta,0);
 	setmd(sorta_old,0);
 	setmd(socket,3);
 	setmd(strchr,2);
 	setmd(tgkill,3);
-	setmd(write,0);
-	setmd(write3,3);
+	setmd(write,3);
 	setmd(open,0);
 #define setconst(c) expr_symset_add(es,#c,EXPR_CONSTANT,(double)(c))
 	setconst(AF_UNIX);

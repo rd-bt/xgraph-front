@@ -5,6 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 #include "xgraph/header/expr.h"
+#include <errno.h>
+#include "readall.c"
 #include <time.h>
 #include <math.h>
 #include <err.h>
@@ -245,7 +247,7 @@ vmd:
 	}
 }
 int main(int argc,char **argv){
-	char *buf,*p,*p1;
+	char *buf,*p,*p1,*e;
 	int flag=0;
 	if(argc<2)
 	errx(EXIT_FAILURE,"no expression input");
@@ -274,7 +276,14 @@ int main(int argc,char **argv){
 			flag|=EXPR_IF_NOOPTIMIZE;
 	}
 	add_common_symbols(es);
-	if(init_expr5(ep,argv[argc-1],"t",es,flag)<0){
+	if(!strcmp(e=argv[argc-1],"-")){
+		ssize_t r=readall(STDIN_FILENO,(void **)&e);
+		if(r<0){
+			expr_symset_free(es);
+			errx(EXIT_FAILURE,"cannot read stdin:%s",strerror(-r));
+		}
+	}
+	if(init_expr5(ep,e,"t",es,flag)<0){
 		errx(EXIT_FAILURE,"expression error:%s (%s)",expr_error(ep->error),ep->errinfo);
 	}
 	list(ep,ep->sset);
