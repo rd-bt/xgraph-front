@@ -108,7 +108,7 @@ void drawat(const char *ex,const char *ey,const char *para){
 	//write(STDERR_FILENO,"\033[?25l",6);
 	//write(STDERR_FILENO,"\033c",2);
 	write(STDERR_FILENO,wbuf,sprintf(wbuf,"drawing x=%s y=%s\n",ex,ey));
-	srate=g.height/16;
+	srate=g.height/64;
 	for(;;){
 	lrate=
 	graph_textlen(&g,wbuf+7,4,srate)*2;
@@ -338,7 +338,7 @@ int main(int argc,char **argv){
 	wbuf=malloc((thread+1)*(18+barlen)+14);
 	bar=malloc(3+barlen);
 
-	expr_symset_add(es,"connect",EXPR_MDFUNCTION,draw_connect,4ul);
+	expr_symset_add(es,"draw_connect",EXPR_MDFUNCTION,draw_connect,4ul);
 	add_common_symbols(es);
 	//draw start
 	for(char **cnt=argv+1;*cnt;++cnt){
