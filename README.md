@@ -1,5 +1,5 @@
 # xgraph-front
-Front end of [xgraph](https://github.com/xbound/xgraph) library
+Front end of [xgraph](https://github.com/torontoface/xgraph) library
 
 Example:
 ```
