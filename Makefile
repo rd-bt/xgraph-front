@@ -1,5 +1,5 @@
 CC := gcc
-CFLAG := -Wall -Ofast
+CFLAG := -Wall -O3
 LFLAG := xgraph/lib/xgraph.a -lc -lm
 all: draw calc list dump symtest sorttest
 draw: main.c xgraph/lib/xgraph.a xgraph/header/xdraw.h xgraph common_symbols.c
